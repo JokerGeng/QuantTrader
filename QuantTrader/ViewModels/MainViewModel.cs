@@ -1,0 +1,378 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using QuantTrader.Commands;
+using QuantTrader.Models;
+using QuantTrader.Strategies;
+using QuantTrader.TradingEngine;
+using System.Windows.Input;
+
+namespace QuantTrader.ViewModels
+{
+    public class MainViewModel : ViewModelBase
+    {
+        private readonly ITradingEngine _tradingEngine;
+
+        private bool _isEngineRunning;
+        private AccountViewModel _account;
+        private StrategyViewModel _selectedStrategy;
+        private string _statusMessage;
+
+        public bool IsEngineRunning
+        {
+            get => _isEngineRunning;
+            private set => SetProperty(ref _isEngineRunning, value);
+        }
+
+        public AccountViewModel Account
+        {
+            get => _account;
+            private set => SetProperty(ref _account, value);
+        }
+
+        public ObservableCollection<StrategyViewModel> Strategies { get; } = new ObservableCollection<StrategyViewModel>();
+
+        public StrategyViewModel SelectedStrategy
+        {
+            get => _selectedStrategy;
+            set => SetProperty(ref _selectedStrategy, value);
+        }
+
+        public ObservableCollection<OrderViewModel> Orders { get; } = new ObservableCollection<OrderViewModel>();
+
+        public ObservableCollection<SignalViewModel> Signals { get; } = new ObservableCollection<SignalViewModel>();
+
+        public ObservableCollection<PositionViewModel> Positions { get; } = new ObservableCollection<PositionViewModel>();
+
+        public ObservableCollection<LogEntryViewModel> LogEntries { get; } = new ObservableCollection<LogEntryViewModel>();
+
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set => SetProperty(ref _statusMessage, value);
+        }
+
+        public ICommand StartEngineCommand { get; }
+        public ICommand StopEngineCommand { get; }
+        public ICommand AddStrategyCommand { get; }
+        public ICommand RemoveStrategyCommand { get; }
+        public ICommand StartStrategyCommand { get; }
+        public ICommand StopStrategyCommand { get; }
+        public ICommand ConfigureStrategyCommand { get; }
+
+        public MainViewModel(ITradingEngine tradingEngine)
+        {
+            _tradingEngine = tradingEngine;
+
+            // 初始化命令
+            StartEngineCommand = new AsyncRelayCommand(ExecuteStartEngineAsync, _ => !IsEngineRunning);
+            StopEngineCommand = new AsyncRelayCommand(ExecuteStopEngineAsync, _ => IsEngineRunning);
+            AddStrategyCommand = new AsyncRelayCommand(ExecuteAddStrategyAsync, _ => IsEngineRunning);
+            RemoveStrategyCommand = new AsyncRelayCommand(ExecuteRemoveStrategyAsync, _ => SelectedStrategy != null);
+            StartStrategyCommand = new AsyncRelayCommand(ExecuteStartStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status != StrategyStatus.Running);
+            StopStrategyCommand = new AsyncRelayCommand(ExecuteStopStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status == StrategyStatus.Running);
+            ConfigureStrategyCommand = new AsyncRelayCommand(ExecuteConfigureStrategyAsync, _ => SelectedStrategy != null);
+
+            // 订阅交易引擎事件
+            _tradingEngine.SignalGenerated += OnSignalGenerated;
+            _tradingEngine.OrderExecuted += OnOrderExecuted;
+            _tradingEngine.StrategyLogGenerated += OnStrategyLogGenerated;
+            _tradingEngine.AccountUpdated += OnAccountUpdated;
+        }
+
+        private async Task ExecuteStartEngineAsync(object parameter)
+        {
+            try
+            {
+                StatusMessage = "Starting trading engine...";
+                await _tradingEngine.StartAsync();
+
+                IsEngineRunning = true;
+                UpdateAccount(_tradingEngine.Account);
+
+                StatusMessage = "Trading engine started successfully.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error starting trading engine: {ex.Message}";
+            }
+        }
+
+        private async Task ExecuteStopEngineAsync(object parameter)
+        {
+            try
+            {
+                StatusMessage = "Stopping trading engine...";
+                await _tradingEngine.StopAsync();
+
+                IsEngineRunning = false;
+                StatusMessage = "Trading engine stopped.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error stopping trading engine: {ex.Message}";
+            }
+        }
+
+        private async Task ExecuteAddStrategyAsync(object parameter)
+        {
+            try
+            {
+                // 显示策略配置对话框
+                var configWindow = new StrategyConfigWindow();
+                var result = configWindow.ShowDialog();
+
+                if (result != true)
+                    return;
+
+                // 获取参数
+                var strategyType = configWindow.ViewModel.StrategyType;
+                var parameters = configWindow.Parameters;
+
+                // 添加策略
+                var strategy = await _tradingEngine.AddStrategyAsync(strategyType, parameters);
+
+                ExecuteOnUI(() =>
+                {
+                    var strategyViewModel = new StrategyViewModel(strategy);
+                    Strategies.Add(strategyViewModel);
+                    SelectedStrategy = strategyViewModel;
+                });
+
+                StatusMessage = $"Strategy '{strategy.Name}' added successfully.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error adding strategy: {ex.Message}";
+            }
+        }
+
+        private async Task ExecuteRemoveStrategyAsync(object parameter)
+        {
+            if (SelectedStrategy == null)
+                return;
+
+            try
+            {
+                StatusMessage = $"Removing strategy '{SelectedStrategy.Name}'...";
+                await _tradingEngine.RemoveStrategyAsync(SelectedStrategy.Id);
+
+                ExecuteOnUI(() =>
+                {
+                    Strategies.Remove(SelectedStrategy);
+                    SelectedStrategy = null;
+                });
+
+                StatusMessage = "Strategy removed successfully.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error removing strategy: {ex.Message}";
+            }
+        }
+
+        private async Task ExecuteStartStrategyAsync(object parameter)
+        {
+            if (SelectedStrategy == null)
+                return;
+
+            try
+            {
+                StatusMessage = $"Starting strategy '{SelectedStrategy.Name}'...";
+                await _tradingEngine.StartStrategyAsync(SelectedStrategy.Id);
+
+                // 更新视图模型
+                SelectedStrategy.Status = StrategyStatus.Running;
+
+                StatusMessage = $"Strategy '{SelectedStrategy.Name}' started successfully.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error starting strategy: {ex.Message}";
+            }
+        }
+
+        private async Task ExecuteStopStrategyAsync(object parameter)
+        {
+            if (SelectedStrategy == null)
+                return;
+
+            try
+            {
+                StatusMessage = $"Stopping strategy '{SelectedStrategy.Name}'...";
+                await _tradingEngine.StopStrategyAsync(SelectedStrategy.Id);
+
+                // 更新视图模型
+                SelectedStrategy.Status = StrategyStatus.Stopped;
+
+                StatusMessage = $"Strategy '{SelectedStrategy.Name}' stopped successfully.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error stopping strategy: {ex.Message}";
+            }
+        }
+
+        private async Task ExecuteConfigureStrategyAsync(object parameter)
+        {
+            if (SelectedStrategy == null)
+                return;
+
+            try
+            {
+                // 显示策略配置对话框
+                var configWindow = new StrategyConfigWindow();
+                configWindow.ViewModel.SetExistingStrategy(SelectedStrategy);
+
+                var result = configWindow.ShowDialog();
+                if (result != true)
+                    return;
+
+                // 获取参数
+                var parameters = configWindow.Parameters;
+
+                // 更新策略参数
+                await _tradingEngine.UpdateStrategyParametersAsync(SelectedStrategy.Id, parameters);
+
+                // 更新视图模型
+                foreach (var param in parameters)
+                {
+                    SelectedStrategy.Parameters[param.Key] = param.Value;
+                }
+
+                StatusMessage = $"Strategy '{SelectedStrategy.Name}' configured successfully.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error configuring strategy: {ex.Message}";
+            }
+        }
+
+        private void OnSignalGenerated(string strategyId, Strategies.Signal signal)
+        {
+            ExecuteOnUI(() =>
+            {
+                var signalViewModel = new SignalViewModel
+                {
+                    StrategyId = strategyId,
+                    Symbol = signal.Symbol,
+                    Type = signal.Type.ToString(),
+                    Price = signal.Price,
+                    Quantity = signal.Quantity,
+                    Timestamp = signal.Timestamp,
+                    Reason = signal.Reason
+                };
+
+                Signals.Insert(0, signalViewModel);
+
+                // 限制显示条数
+                while (Signals.Count > 100)
+                {
+                    Signals.RemoveAt(Signals.Count - 1);
+                }
+            });
+        }
+
+        private void OnOrderExecuted(string strategyId, Order order)
+        {
+            ExecuteOnUI(() =>
+            {
+                // 添加或更新订单
+                var existingOrder = Orders.FirstOrDefault(o => o.OrderId == order.OrderId);
+                if (existingOrder != null)
+                {
+                    existingOrder.Status = order.Status.ToString();
+                    existingOrder.FilledQuantity = order.FilledQuantity;
+                    existingOrder.AverageFilledPrice = order.AverageFilledPrice;
+                    existingOrder.UpdateTime = order.UpdateTime;
+                }
+                else
+                {
+                    var orderViewModel = new OrderViewModel
+                    {
+                        OrderId = order.OrderId,
+                        StrategyId = strategyId,
+                        Symbol = order.Symbol,
+                        Direction = order.Direction.ToString(),
+                        Type = order.Type.ToString(),
+                        Price = order.Price,
+                        Quantity = order.Quantity,
+                        FilledQuantity = order.FilledQuantity,
+                        Status = order.Status.ToString(),
+                        CreateTime = order.CreateTime,
+                        UpdateTime = order.UpdateTime,
+                        AverageFilledPrice = order.AverageFilledPrice
+                    };
+
+                    Orders.Insert(0, orderViewModel);
+                }
+
+                // 限制显示条数
+                while (Orders.Count > 100)
+                {
+                    Orders.RemoveAt(Orders.Count - 1);
+                }
+            });
+        }
+
+        private void OnStrategyLogGenerated(string strategyId, string message)
+        {
+            ExecuteOnUI(() =>
+            {
+                var logEntry = new LogEntryViewModel
+                {
+                    Timestamp = DateTime.Now,
+                    StrategyId = strategyId,
+                    Message = message
+                };
+
+                LogEntries.Insert(0, logEntry);
+
+                // 限制显示条数
+                while (LogEntries.Count > 1000)
+                {
+                    LogEntries.RemoveAt(LogEntries.Count - 1);
+                }
+            });
+        }
+
+        private void OnAccountUpdated(Account account)
+        {
+            ExecuteOnUI(() => UpdateAccount(account));
+        }
+
+        private void UpdateAccount(Account account)
+        {
+            if (account == null)
+                return;
+
+            Account = new AccountViewModel
+            {
+                AccountId = account.AccountId,
+                Cash = account.Cash,
+                TotalAssetValue = account.TotalAssetValue,
+                MarginUsed = account.MarginUsed,
+                MarginAvailable = account.MarginAvailable
+            };
+
+            // 更新持仓列表
+            Positions.Clear();
+            foreach (var position in account.Positions.Values)
+            {
+                Positions.Add(new PositionViewModel
+                {
+                    Symbol = position.Symbol,
+                    Quantity = position.Quantity,
+                    AverageCost = position.AverageCost,
+                    CurrentPrice = position.CurrentPrice,
+                    MarketValue = position.MarketValue,
+                    UnrealizedPnL = position.UnrealizedPnL,
+                    UnrealizedPnLPercent = position.UnrealizedPnLPercent
+                });
+            }
+        }
+    }
+}
