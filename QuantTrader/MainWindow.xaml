@@ -7,7 +7,8 @@
         xmlns:vm="clr-namespace:QuantTrader.ViewModels"
         xmlns:cvt="clr-namespace:QuantTrader.Converts"
         mc:Ignorable="d"
-        Title="Quant Trader" Height="800" Width="1200">
+        Title="Quant Trader" Height="800" Width="1200"
+        d:DataContext="{d:DesignInstance vm:MainViewModel}">
     
     <Window.Resources>
         <Style TargetType="Button">
@@ -50,18 +51,11 @@
 
         <!-- 工具栏 -->
         <ToolBar Grid.Row="0">
-            <Button Command="{Binding StartEngineCommand}" 
-                    Content="Start Engine" 
-                    IsEnabled="{Binding IsEngineRunning, Converter={StaticResource BoolToVisibility}, ConverterParameter=Inverse}"/>
-            <Button Command="{Binding StopEngineCommand}" 
-                    Content="Stop Engine" 
-                    IsEnabled="{Binding IsEngineRunning}"/>
+            <Button Command="{Binding StartEngineCommand}" Content="Start Engine"/>
+            <Button Command="{Binding StopEngineCommand}" Content="Stop Engine" IsEnabled="{Binding IsEngineRunning}"/>
             <Separator/>
-            <Button Command="{Binding AddStrategyCommand}" 
-                    Content="Add Strategy" 
-                    IsEnabled="{Binding IsEngineRunning}"/>
-            <Button Command="{Binding RemoveStrategyCommand}" 
-                    Content="Remove Strategy" 
+            <Button Command="{Binding AddStrategyCommand}" Content="Add Strategy" IsEnabled="{Binding IsEngineRunning}"/>
+            <Button Command="{Binding RemoveStrategyCommand}" Content="Remove Strategy" 
                     IsEnabled="{Binding SelectedStrategy, Converter={StaticResource BoolToVisibility}}"/>
             <Button Command="{Binding StartStrategyCommand}" 
                     Content="Start Strategy" 

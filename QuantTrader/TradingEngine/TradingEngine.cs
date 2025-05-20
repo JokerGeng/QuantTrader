@@ -96,6 +96,8 @@ namespace QuantTrader.TradingEngine
             {
                 "movingaveragecross" => new MovingAverageCrossStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
                 "rsi" => new RSIStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+                "BollingerBands" => new BollingerBandsStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+                "MACD" => new MACDStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
                 // 可以在这里添加其他策略类型
                 _ => throw new ArgumentException($"Unsupported strategy type: {strategyType}")
             };
