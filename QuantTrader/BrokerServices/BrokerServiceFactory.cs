@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using QuantTrader.MarketDatas;
 
 namespace QuantTrader.BrokerServices
 {
@@ -23,12 +24,28 @@ namespace QuantTrader.BrokerServices
         {
             return brokerType.ToLower() switch
             {
-                "simulated" => _serviceProvider.GetRequiredService<SimulatedBrokerService>(),
-                // 可以在这里添加其他券商的支持
-                // "ctp" => _serviceProvider.GetRequiredService<CtpBrokerService>(),
-                // "xtp" => _serviceProvider.GetRequiredService<XtpBrokerService>(),
+                "simulated" => new SimulatedBrokerService(_serviceProvider.GetRequiredService<IMarketDataService>()),
+                "ctp" => new CtpBrokerService(),
+                "xtp" => throw new NotImplementedException("XTP broker service not implemented yet"),
                 _ => throw new ArgumentException($"Unsupported broker type: {brokerType}")
             };
+        }
+
+        /// <summary>
+        /// 获取支持的券商类型列表
+        /// </summary>
+        public static string[] GetSupportedBrokerTypes()
+        {
+            return new[] { "simulated", "ctp", "xtp" };
+        }
+
+        /// <summary>
+        /// 检查券商类型是否支持
+        /// </summary>
+        public static bool IsBrokerTypeSupported(string brokerType)
+        {
+            return Array.Exists(GetSupportedBrokerTypes(),
+                type => type.Equals(brokerType, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

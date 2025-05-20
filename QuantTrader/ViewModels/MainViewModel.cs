@@ -9,22 +9,45 @@ using QuantTrader.Models;
 using QuantTrader.Strategies;
 using QuantTrader.TradingEngine;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
+using QuantTrader.BrokerServices;
 
 namespace QuantTrader.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
         private readonly ITradingEngine _tradingEngine;
+        private readonly IServiceProvider _serviceProvider;
 
         private bool _isEngineRunning;
         private AccountViewModel _account;
         private StrategyViewModel _selectedStrategy;
         private string _statusMessage;
+        private bool _isBrokerConnected;
+        private string _brokerConnectionInfo;
+
+        public bool IsBrokerConnected
+        {
+            get => _isBrokerConnected;
+            private set => SetProperty(ref _isBrokerConnected, value);
+        }
+
+        public string BrokerConnectionInfo
+        {
+            get => _brokerConnectionInfo;
+            private set => SetProperty(ref _brokerConnectionInfo, value);
+        }
 
         public bool IsEngineRunning
         {
             get => _isEngineRunning;
             private set => SetProperty(ref _isEngineRunning, value);
+        }
+
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set => SetProperty(ref _statusMessage, value);
         }
 
         public AccountViewModel Account
@@ -49,12 +72,6 @@ namespace QuantTrader.ViewModels
 
         public ObservableCollection<LogEntryViewModel> LogEntries { get; } = new ObservableCollection<LogEntryViewModel>();
 
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
-
         public ICommand StartEngineCommand { get; }
         public ICommand StopEngineCommand { get; }
         public ICommand AddStrategyCommand { get; }
@@ -63,9 +80,23 @@ namespace QuantTrader.ViewModels
         public ICommand StopStrategyCommand { get; }
         public ICommand ConfigureStrategyCommand { get; }
 
-        public MainViewModel(ITradingEngine tradingEngine)
+        public ICommand ReconnectBrokerCommand { get; }
+
+        public MainViewModel(IServiceProvider serviceProvider ,ITradingEngine tradingEngine)
         {
+            _serviceProvider = serviceProvider;
             _tradingEngine = tradingEngine;
+
+            if (_tradingEngine is TradingEngine.TradingEngine engine &&
+      engine.BrokerService != null)
+            {
+                var brokerService = engine.BrokerService;
+                IsBrokerConnected = brokerService.IsConnected;
+                BrokerConnectionInfo = brokerService.ConnectionInfo?.ToString() ?? "Not connected";
+
+                // 订阅连接状态变更事件
+                brokerService.ConnectionStatusChanged += OnBrokerConnectionStatusChanged;
+            }
 
             // 初始化命令
             StartEngineCommand = new AsyncRelayCommand(ExecuteStartEngineAsync, _ => !IsEngineRunning);
@@ -75,6 +106,7 @@ namespace QuantTrader.ViewModels
             StartStrategyCommand = new AsyncRelayCommand(ExecuteStartStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status != StrategyStatus.Running);
             StopStrategyCommand = new AsyncRelayCommand(ExecuteStopStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status == StrategyStatus.Running);
             ConfigureStrategyCommand = new AsyncRelayCommand(ExecuteConfigureStrategyAsync, _ => SelectedStrategy != null);
+            ReconnectBrokerCommand = new AsyncRelayCommand(ExecuteReconnectBrokerAsync, _ => !IsBrokerConnected);
 
             // 订阅交易引擎事件
             _tradingEngine.SignalGenerated += OnSignalGenerated;
@@ -251,6 +283,33 @@ namespace QuantTrader.ViewModels
             }
         }
 
+        private async Task ExecuteReconnectBrokerAsync(object parameter)
+        {
+            try
+            {
+                StatusMessage = "Attempting to reconnect to broker...";
+
+                // 显示登录窗口重新连接
+                var loginWindow = new LoginWindow(new LoginViewModel(new BrokerServiceFactory(_serviceProvider)));
+                var result = loginWindow.ShowDialog();
+
+                if (result == true && loginWindow.BrokerService != null)
+                {
+                    // 重新连接成功，更新交易引擎的券商服务
+                    // 注意：这需要交易引擎支持热替换券商服务
+                    StatusMessage = "Reconnected to broker successfully.";
+                }
+                else
+                {
+                    StatusMessage = "Reconnection cancelled or failed.";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Reconnection error: {ex.Message}";
+            }
+        }
+
         private void OnSignalGenerated(string strategyId, Strategies.Signal signal)
         {
             ExecuteOnUI(() =>
@@ -342,6 +401,25 @@ namespace QuantTrader.ViewModels
         private void OnAccountUpdated(Account account)
         {
             ExecuteOnUI(() => UpdateAccount(account));
+        }
+
+        private void OnBrokerConnectionStatusChanged(bool isConnected)
+        {
+            ExecuteOnUI(() =>
+            {
+                IsBrokerConnected = isConnected;
+
+                if (isConnected && _tradingEngine is TradingEngine.TradingEngine engine)
+                {
+                    BrokerConnectionInfo = engine.BrokerService.ConnectionInfo?.ToString() ?? "Connected";
+                    StatusMessage = "Broker connected successfully.";
+                }
+                else
+                {
+                    BrokerConnectionInfo = "Not connected";
+                    StatusMessage = "Broker disconnected.";
+                }
+            });
         }
 
         private void UpdateAccount(Account account)

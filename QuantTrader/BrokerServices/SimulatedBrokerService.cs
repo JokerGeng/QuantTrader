@@ -17,12 +17,15 @@ namespace QuantTrader.BrokerServices
         private readonly Dictionary<string, Order> _orders = new Dictionary<string, Order>();
         private Account _account;
         private bool _connected;
+        private BrokerConnectionInfo _connectionInfo;
 
         public event Action<Order> OrderStatusChanged;
         public event Action<Order> OrderExecuted;
         public event Action<Account> AccountUpdated;
+        public event Action<bool> ConnectionStatusChanged;
 
         public bool IsConnected => _connected;
+        public BrokerConnectionInfo ConnectionInfo => _connectionInfo;
 
         public SimulatedBrokerService(IMarketDataService marketDataService)
         {
@@ -34,20 +37,47 @@ namespace QuantTrader.BrokerServices
             _account = new Account("SIM001", 1000000);
         }
 
-        public Task<bool> ConnectAsync(string username, string password, string serverAddress)
+        public async Task<bool> ConnectAsync(string username, string password, string serverAddress)
         {
+            // 模拟连接延迟
+            await Task.Delay(1000);
+
+            // 模拟登录验证
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                return false;
+            }
+
+            // 对于模拟券商，任何非空的用户名密码都可以登录
             _connected = true;
+            _connectionInfo = new BrokerConnectionInfo
+            {
+                BrokerType = "simulated",
+                BrokerName = "Simulated Broker",
+                Username = username,
+                ServerAddress = serverAddress,
+                ConnectedTime = DateTime.Now,
+                Version = "1.0.0"
+            };
+
             _simulationTimer.Start();
 
-            return Task.FromResult(true);
+            // 触发连接状态变更事件
+            ConnectionStatusChanged?.Invoke(true);
+
+            return true;
         }
 
-        public Task DisconnectAsync()
+        public async Task DisconnectAsync()
         {
             _connected = false;
             _simulationTimer.Stop();
+            _connectionInfo = null;
 
-            return Task.CompletedTask;
+            // 触发连接状态变更事件
+            ConnectionStatusChanged?.Invoke(false);
+
+            await Task.CompletedTask;
         }
 
         public Task<Account> GetAccountInfoAsync()
@@ -351,6 +381,7 @@ namespace QuantTrader.BrokerServices
         {
             _simulationTimer?.Stop();
             _simulationTimer?.Dispose();
+            _ = DisconnectAsync();
         }
     }
 }

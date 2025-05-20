@@ -28,6 +28,11 @@ namespace QuantTrader.BrokerServices
         bool IsConnected { get; }
 
         /// <summary>
+        /// 连接信息
+        /// </summary>
+        BrokerConnectionInfo ConnectionInfo { get; }
+
+        /// <summary>
         /// 获取账户信息
         /// </summary>
         Task<Account> GetAccountInfoAsync();
@@ -71,5 +76,10 @@ namespace QuantTrader.BrokerServices
         /// 账户更新事件
         /// </summary>
         event Action<Account> AccountUpdated;
+
+        /// <summary>
+        /// 连接状态变更事件
+        /// </summary>
+        event Action<bool> ConnectionStatusChanged;
     }
 }

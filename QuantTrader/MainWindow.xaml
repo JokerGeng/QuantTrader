@@ -35,8 +35,9 @@
 
         <!-- 数字格式化转换器 -->
         <cvt:DecimalFormatConverter x:Key="DecimalFormat"/>
-        <cvt:ColorConverterPnL x:Key="PnLColorConverter"/>
+        <cvt:ColorConverterPnL x:Key="PnLColorConverter"/> 
         <cvt:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <cvt:BoolToColorConverter x:Key="BoolToColorConverter"/>
     </Window.Resources>
 
     <Grid>
@@ -82,16 +83,30 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="Account:" FontWeight="Bold"/>
-            <TextBlock Grid.Column="1" Text="{Binding Account.AccountId}" Margin="5,0,20,0"/>
+            <!-- 连接状态 -->
+            <TextBlock Grid.Column="0" Text="Broker:" FontWeight="Bold"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,20,0">
+                <Ellipse Width="8" Height="8" Margin="0,0,5,0">
+                    <Ellipse.Fill>
+                        <SolidColorBrush Color="{Binding IsBrokerConnected, Converter={StaticResource BoolToColorConverter}}"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <TextBlock Text="{Binding BrokerConnectionInfo}" VerticalAlignment="Center"/>
+            </StackPanel>
 
-            <TextBlock Grid.Column="2" Text="Cash:" FontWeight="Bold"/>
-            <TextBlock Grid.Column="3" Text="{Binding Account.Cash, StringFormat=C2}" Margin="5,0,20,0"/>
+            <!-- 账户信息保持不变 -->
+            <TextBlock Grid.Column="2" Text="Account:" FontWeight="Bold"/>
+            <TextBlock Grid.Column="3" Text="{Binding Account.AccountId}" Margin="5,0,20,0"/>
 
-            <TextBlock Grid.Column="4" Text="Total Value:" FontWeight="Bold"/>
-            <TextBlock Grid.Column="5" Text="{Binding Account.TotalAssetValue, StringFormat=C2}" Margin="5,0,0,0"/>
+            <TextBlock Grid.Column="4" Text="Cash:" FontWeight="Bold"/>
+            <TextBlock Grid.Column="5" Text="{Binding Account.Cash, StringFormat=C2}" Margin="5,0,20,0"/>
+
+            <TextBlock Grid.Column="6" Text="Total Value:" FontWeight="Bold"/>
+            <TextBlock Grid.Column="7" Text="{Binding Account.TotalAssetValue, StringFormat=C2}" Margin="5,0,0,0"/>
         </Grid>
 
         <!-- 主内容区 -->

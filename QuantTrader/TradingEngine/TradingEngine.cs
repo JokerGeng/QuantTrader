@@ -21,6 +21,7 @@ namespace QuantTrader.TradingEngine
 
         public IReadOnlyList<IStrategy> Strategies => _strategies.AsReadOnly();
         public Account Account { get; private set; }
+        public IBrokerService BrokerService => _brokerService;
 
         public event Action<string, Signal> SignalGenerated;
         public event Action<string, Order> OrderExecuted;
