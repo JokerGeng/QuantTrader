@@ -21,6 +21,27 @@ namespace QuantTrader
         {
             InitializeComponent();
             DataContext = viewModel;
+
+            Closing += MainWindow_Closing;
+        }
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // 询问用户是否确定要退出
+            var result = MessageBox.Show(
+                "Are you sure you want to exit the application?",
+                "Confirm Exit",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.No)
+            {
+                // 取消关闭
+                e.Cancel = true;
+                return;
+            }
+
+            // 用户确认退出，关闭应用程序
+            Application.Current.Shutdown();
         }
     }
 }
