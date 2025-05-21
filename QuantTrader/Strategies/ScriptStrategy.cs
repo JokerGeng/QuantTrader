@@ -59,7 +59,7 @@ namespace QuantTrader.Strategies
 
         public override async Task InitializeAsync()
         {
-            await base.InitializeAsync();
+            //await base.InitializeAsync();
 
             // 尝试编译脚本
             if (!_isScriptCompiled)
@@ -129,7 +129,7 @@ namespace QuantTrader.Strategies
                  _compiledScript.Compile();
 
                 _isScriptCompiled = true;
-                Log("Script compiled successfully");
+                //Log("Script compiled successfully");
             }
             catch (Exception ex)
             {
