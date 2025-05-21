@@ -79,8 +79,8 @@ namespace QuantTrader.ViewModels
         public ICommand StartStrategyCommand { get; }
         public ICommand StopStrategyCommand { get; }
         public ICommand ConfigureStrategyCommand { get; }
-
         public ICommand ReconnectBrokerCommand { get; }
+        public ICommand CreateCustomStrategyCommand { get; }
 
         public MainViewModel(IServiceProvider serviceProvider ,ITradingEngine tradingEngine)
         {
@@ -106,8 +106,8 @@ namespace QuantTrader.ViewModels
             StartStrategyCommand = new AsyncRelayCommand(ExecuteStartStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status != StrategyStatus.Running);
             StopStrategyCommand = new AsyncRelayCommand(ExecuteStopStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status == StrategyStatus.Running);
             ConfigureStrategyCommand = new AsyncRelayCommand(ExecuteConfigureStrategyAsync, _ => SelectedStrategy != null);
-            ReconnectBrokerCommand = new AsyncRelayCommand(ExecuteReconnectBrokerAsync, _ => !IsBrokerConnected);
-
+            ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, _ => !IsBrokerConnected);
+            CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy, _ => IsEngineRunning);
             // 订阅交易引擎事件
             _tradingEngine.SignalGenerated += OnSignalGenerated;
             _tradingEngine.OrderExecuted += OnOrderExecuted;
@@ -283,7 +283,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteReconnectBrokerAsync(object parameter)
+        private void ExecuteReconnectBroker(object parameter)
         {
             try
             {
@@ -307,6 +307,38 @@ namespace QuantTrader.ViewModels
             catch (Exception ex)
             {
                 StatusMessage = $"Reconnection error: {ex.Message}";
+            }
+        }
+
+        private  void ExecuteCreateCustomStrategy(object parameter)
+        {
+            try
+            {
+                // 创建脚本编辑器视图模型
+                var scriptEditorViewModel = new ScriptEditorViewModel(_tradingEngine);
+
+                // 显示脚本编辑器窗口
+                var scriptEditorWindow = new ScriptEditorWindow(scriptEditorViewModel);
+                var result = scriptEditorWindow.ShowDialog();
+
+                if (result == true && scriptEditorWindow.ScriptStrategy != null)
+                {
+                    // 添加策略到视图模型列表
+                    var strategy = scriptEditorWindow.ScriptStrategy;
+
+                    ExecuteOnUI(() =>
+                    {
+                        var strategyViewModel = new StrategyViewModel(strategy);
+                        Strategies.Add(strategyViewModel);
+                        SelectedStrategy = strategyViewModel;
+                    });
+
+                    StatusMessage = $"Script strategy '{strategy.Name}' created successfully.";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error creating script strategy: {ex.Message}";
             }
         }
 

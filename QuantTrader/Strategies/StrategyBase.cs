@@ -16,7 +16,7 @@ namespace QuantTrader.Strategies
         protected readonly IDataRepository _dataRepository;
 
         public string Id { get; }
-        public string Name { get; protected set; }
+        public string Name { get;  set; }
         public string Description { get; protected set; }
         public Dictionary<string, object> Parameters { get; protected set; }
         public StrategyStatus Status { get; protected set; }

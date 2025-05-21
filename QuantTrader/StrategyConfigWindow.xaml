@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QuantTrader"
+        mc:Ignorable="d"
         xmlns:vm="clr-namespace:QuantTrader.ViewModels"
         Title="Strategy Configuration" Height="450" Width="600"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        d:DataContext="{d:DesignInstance vm:StrategyConfigViewModel}">
     <Window.Resources>
         <Style TargetType="TextBlock">
             <Setter Property="Margin" Value="5"/>

@@ -96,9 +96,9 @@ namespace QuantTrader.TradingEngine
             {
                 "movingaveragecross" => new MovingAverageCrossStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
                 "rsi" => new RSIStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
-                "BollingerBands" => new BollingerBandsStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
-                "MACD" => new MACDStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
-                // 可以在这里添加其他策略类型
+                "bollingerbands" => new BollingerBandsStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+                "macd" => new MACDStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+                "script" => new ScriptStrategy(strategyId, _brokerService, _marketDataService, _dataRepository), // 添加脚本策略
                 _ => throw new ArgumentException($"Unsupported strategy type: {strategyType}")
             };
 
@@ -124,7 +124,6 @@ namespace QuantTrader.TradingEngine
 
             return strategy;
         }
-
         public async Task RemoveStrategyAsync(string strategyId)
         {
             var strategy = GetStrategyOrThrow(strategyId);

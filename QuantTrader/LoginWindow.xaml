@@ -9,7 +9,8 @@
         mc:Ignorable="d"
         Title="QuantTrader - Login" Height="500" Width="450"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        d:DataContext="{d:DesignInstance vm:LoginViewModel}">
 
     <Window.Resources>
         <Style TargetType="TextBlock">

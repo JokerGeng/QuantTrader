@@ -54,18 +54,18 @@
             <Button Command="{Binding StartEngineCommand}" Content="Start Engine"/>
             <Button Command="{Binding StopEngineCommand}" Content="Stop Engine" IsEnabled="{Binding IsEngineRunning}"/>
             <Separator/>
-            <Button Command="{Binding AddStrategyCommand}" Content="Add Strategy" IsEnabled="{Binding IsEngineRunning}"/>
+            <Button Command="{Binding AddStrategyCommand}" Content="Add Strategy" 
+                    IsEnabled="{Binding IsEngineRunning}"/>
             <Button Command="{Binding RemoveStrategyCommand}" Content="Remove Strategy" 
                     IsEnabled="{Binding SelectedStrategy, Converter={StaticResource BoolToVisibility}}"/>
-            <Button Command="{Binding StartStrategyCommand}" 
-                    Content="Start Strategy" 
+            <Button Command="{Binding StartStrategyCommand}" Content="Start Strategy" 
                     IsEnabled="{Binding SelectedStrategy, Converter={StaticResource BoolToVisibility}}"/>
-            <Button Command="{Binding StopStrategyCommand}" 
-                    Content="Stop Strategy" 
+            <Button Command="{Binding StopStrategyCommand}" Content="Stop Strategy" 
                     IsEnabled="{Binding SelectedStrategy, Converter={StaticResource BoolToVisibility}}"/>
-            <Button Command="{Binding ConfigureStrategyCommand}" 
-                    Content="Configure Strategy" 
+            <Button Command="{Binding ConfigureStrategyCommand}" Content="Configure Strategy" 
                     IsEnabled="{Binding SelectedStrategy, Converter={StaticResource BoolToVisibility}}"/>
+            <Button Command="{Binding CreateCustomStrategyCommand}"  Content="Create Script Strategy" 
+                    IsEnabled="{Binding IsEngineRunning}"/>
         </ToolBar>
 
         <!-- 账户信息面板 -->
