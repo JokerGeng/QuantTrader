@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Input;
 using QuantTrader.BrokerServices;
 using QuantTrader.Commands;
-using System.Windows.Input;
 
 namespace QuantTrader.ViewModels
 {
@@ -130,6 +125,24 @@ namespace QuantTrader.ViewModels
 
             AvailableBrokers.Add(new BrokerInfo
             {
+                Type = "新浪",
+                Name = "新浪",
+                Description = "新浪行情数据服务接口",
+                DefaultServerAddress = "http://hq.sinajs.cn",
+                RequiresRealCredentials = true
+            });
+
+            AvailableBrokers.Add(new BrokerInfo
+            {
+                Type = "东方财富",
+                Name = "东方财富",
+                Description = "东方财富行情数据服务接口",
+                DefaultServerAddress = "http://quote.eastmoney.com",
+                RequiresRealCredentials = true
+            });
+
+            AvailableBrokers.Add(new BrokerInfo
+            {
                 Type = "ctp",
                 Name = "CTP",
                 Description = "上期技术CTP期货交易接口",
@@ -223,7 +236,7 @@ namespace QuantTrader.ViewModels
                     return;
 
                 // 创建券商服务
-                var brokerService = _brokerServiceFactory.CreateBrokerService(SelectedBrokerType);
+                var brokerService = _brokerServiceFactory.CreateBrokerService(SelectedBrokerType, Username, Password);
 
                 // 连接到券商
                 bool connected = await brokerService.ConnectAsync(Username, Password, ServerAddress);

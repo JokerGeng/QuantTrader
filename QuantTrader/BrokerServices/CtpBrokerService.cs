@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 
 namespace QuantTrader.BrokerServices
@@ -12,6 +13,7 @@ namespace QuantTrader.BrokerServices
         private bool _connected;
         private BrokerConnectionInfo _connectionInfo;
         private Account _account;
+        private IMarketDataService _dataService = new SimulatedMarketDataService();
 
         public event Action<Order> OrderStatusChanged;
         public event Action<Order> OrderExecuted;
@@ -20,6 +22,13 @@ namespace QuantTrader.BrokerServices
 
         public bool IsConnected => _connected;
         public BrokerConnectionInfo ConnectionInfo => _connectionInfo;
+
+        public IMarketDataService MarketDataService => _dataService;
+
+        public CtpBrokerService(string user, string password)
+        {
+            
+        }
 
         public async Task<bool> ConnectAsync(string username, string password, string serverAddress)
         {

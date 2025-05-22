@@ -1,36 +1,41 @@
-﻿using System.Timers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 
 namespace QuantTrader.BrokerServices
 {
-    public class SimulatedBrokerService : IBrokerService, IDisposable
+    public class SinaBrokerService : IBrokerService
     {
-        private readonly IMarketDataService _marketDataService = new SimulatedMarketDataService();
-        private readonly Random _random = new Random();
-        private readonly System.Timers.Timer _simulationTimer;
-        private readonly Dictionary<string, Order> _orders = new Dictionary<string, Order>();
         private Account _account;
         private bool _connected;
         private BrokerConnectionInfo _connectionInfo;
+        private readonly Random _random = new Random();
+        private readonly System.Timers.Timer _getDataTimer;
+        private readonly Dictionary<string, Order> _orders = new Dictionary<string, Order>();
+        private readonly IMarketDataService _marketDataService=new SinaMarketDataService();
+        public bool IsConnected => _connected;
+
+        public IMarketDataService MarketDataService => _marketDataService;
+
+        public BrokerConnectionInfo ConnectionInfo => _connectionInfo;
 
         public event Action<Order> OrderStatusChanged;
         public event Action<Order> OrderExecuted;
         public event Action<Account> AccountUpdated;
         public event Action<bool> ConnectionStatusChanged;
 
-        public bool IsConnected => _connected;
-        public BrokerConnectionInfo ConnectionInfo => _connectionInfo;
-
-        public IMarketDataService MarketDataService => _marketDataService;
-
-        public SimulatedBrokerService(string user, string password)
+        public SinaBrokerService(string user,string password)
         {
-            _simulationTimer = new System.Timers.Timer(500); // 每500毫秒模拟一次订单执行
-            _simulationTimer.Elapsed += OnSimulationTimerElapsed;
+            _getDataTimer = new System.Timers.Timer(500); // 每500毫秒模拟一次订单执行
+            _getDataTimer.Elapsed += GetDataTimer_Elapsed;
 
             // 初始化模拟账户
-            _account = new Account("SIM001", 1000000);
+            _account = new Account("新浪", 1000000);
         }
 
         public async Task<bool> ConnectAsync(string username, string password, string serverAddress)
@@ -48,15 +53,15 @@ namespace QuantTrader.BrokerServices
             _connected = true;
             _connectionInfo = new BrokerConnectionInfo
             {
-                BrokerType = "simulated",
-                BrokerName = "Simulated Broker",
+                BrokerType = "新浪",
+                BrokerName = "新浪财经",
                 Username = username,
                 ServerAddress = serverAddress,
                 ConnectedTime = DateTime.Now,
                 Version = "1.0.0"
             };
 
-            _simulationTimer.Start();
+            _getDataTimer.Start();
 
             // 触发连接状态变更事件
             ConnectionStatusChanged?.Invoke(true);
@@ -67,7 +72,7 @@ namespace QuantTrader.BrokerServices
         public async Task DisconnectAsync()
         {
             _connected = false;
-            _simulationTimer.Stop();
+            _getDataTimer.Stop();
             _connectionInfo = null;
 
             // 触发连接状态变更事件
@@ -160,10 +165,6 @@ namespace QuantTrader.BrokerServices
             // 模拟网络延迟
             await Task.Delay(50);
 
-            // 有1/10的概率取消失败
-            if (_random.Next(10) == 0)
-                return false;
-
             // 更新订单状态
             order.Status = OrderStatus.Canceled;
             order.UpdateTime = DateTime.Now;
@@ -202,7 +203,7 @@ namespace QuantTrader.BrokerServices
             return Task.FromResult(query.ToList());
         }
 
-        private async void OnSimulationTimerElapsed(object sender, ElapsedEventArgs e)
+        private async void GetDataTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             if (!_connected)
                 return;
@@ -371,13 +372,6 @@ namespace QuantTrader.BrokerServices
 
             // 触发账户更新事件
             AccountUpdated?.Invoke(_account);
-        }
-
-        public void Dispose()
-        {
-            _simulationTimer?.Stop();
-            _simulationTimer?.Dispose();
-            _ = DisconnectAsync();
         }
     }
 }

@@ -135,7 +135,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="Server:" FontWeight="Bold"/>
-                    <TextBox Grid.Column="1" Text="{Binding ServerAddress}"/>
+                    <TextBox Grid.Column="1" Text="{Binding ServerAddress}" IsReadOnly="True"/>
                 </Grid>
 
                 <!-- 用户名 -->

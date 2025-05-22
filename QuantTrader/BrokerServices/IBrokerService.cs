@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 
 namespace QuantTrader.BrokerServices
@@ -26,6 +27,11 @@ namespace QuantTrader.BrokerServices
         /// 获取连接状态
         /// </summary>
         bool IsConnected { get; }
+
+        /// <summary>
+        /// 市场数据
+        /// </summary>
+        IMarketDataService MarketDataService { get; }
 
         /// <summary>
         /// 连接信息

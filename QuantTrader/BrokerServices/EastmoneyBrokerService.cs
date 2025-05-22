@@ -1,10 +1,15 @@
-﻿using System.Timers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
 using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 
 namespace QuantTrader.BrokerServices
 {
-    public class SimulatedBrokerService : IBrokerService, IDisposable
+    public class EastmoneyBrokerService : IBrokerService
     {
         private readonly IMarketDataService _marketDataService = new SimulatedMarketDataService();
         private readonly Random _random = new Random();
@@ -24,13 +29,13 @@ namespace QuantTrader.BrokerServices
 
         public IMarketDataService MarketDataService => _marketDataService;
 
-        public SimulatedBrokerService(string user, string password)
+        public EastmoneyBrokerService(string user, string password)
         {
             _simulationTimer = new System.Timers.Timer(500); // 每500毫秒模拟一次订单执行
             _simulationTimer.Elapsed += OnSimulationTimerElapsed;
 
             // 初始化模拟账户
-            _account = new Account("SIM001", 1000000);
+            _account = new Account("东方财富", 1000000);
         }
 
         public async Task<bool> ConnectAsync(string username, string password, string serverAddress)
@@ -48,8 +53,8 @@ namespace QuantTrader.BrokerServices
             _connected = true;
             _connectionInfo = new BrokerConnectionInfo
             {
-                BrokerType = "simulated",
-                BrokerName = "Simulated Broker",
+                BrokerType = "东方财富",
+                BrokerName = "东方财富财经",
                 Username = username,
                 ServerAddress = serverAddress,
                 ConnectedTime = DateTime.Now,

@@ -20,12 +20,14 @@ namespace QuantTrader.BrokerServices
         /// <summary>
         /// 创建券商服务
         /// </summary>
-        public IBrokerService CreateBrokerService(string brokerType)
+        public IBrokerService CreateBrokerService(string brokerType, string user, string password)
         {
             return brokerType.ToLower() switch
             {
-                "simulated" => new SimulatedBrokerService(_serviceProvider.GetRequiredService<IMarketDataService>()),
-                "ctp" => new CtpBrokerService(),
+                "simulated" => new SimulatedBrokerService(user, password),
+                "新浪" => new SinaBrokerService(user, password),
+                "东方财富" => new EastmoneyBrokerService(user, password),
+                "ctp" => new CtpBrokerService(user, password),
                 "xtp" => throw new NotImplementedException("XTP broker service not implemented yet"),
                 _ => throw new ArgumentException($"Unsupported broker type: {brokerType}")
             };
