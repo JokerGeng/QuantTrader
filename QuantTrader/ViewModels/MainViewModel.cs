@@ -11,6 +11,7 @@ using QuantTrader.TradingEngine;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using QuantTrader.BrokerServices;
+using QuantTrader.MarketDatas;
 
 namespace QuantTrader.ViewModels
 {
@@ -82,6 +83,8 @@ namespace QuantTrader.ViewModels
         public ICommand ReconnectBrokerCommand { get; }
         public ICommand CreateCustomStrategyCommand { get; }
 
+        public ICommand OpenStockManagerCommand { get; }
+
         public MainViewModel(IServiceProvider serviceProvider ,ITradingEngine tradingEngine)
         {
             _serviceProvider = serviceProvider;
@@ -108,6 +111,7 @@ namespace QuantTrader.ViewModels
             ConfigureStrategyCommand = new AsyncRelayCommand(ExecuteConfigureStrategyAsync, _ => SelectedStrategy != null);
             ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, _ => !IsBrokerConnected);
             CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy, _ => IsEngineRunning);
+            OpenStockManagerCommand = new RelayCommand(_ => ExecuteOpenStockManager(), _ => IsEngineRunning);
             // 订阅交易引擎事件
             _tradingEngine.SignalGenerated += OnSignalGenerated;
             _tradingEngine.OrderExecuted += OnOrderExecuted;
@@ -280,6 +284,23 @@ namespace QuantTrader.ViewModels
             catch (Exception ex)
             {
                 StatusMessage = $"Error configuring strategy: {ex.Message}";
+            }
+        }
+
+        private void ExecuteOpenStockManager()
+        {
+            try
+            {
+                var stockManagerViewModel = new StockManagerViewModel(
+                    _serviceProvider.GetRequiredService<IMarketDataService>(),
+                    _tradingEngine);
+
+                var stockManagerWindow = new StockManagerWindow(stockManagerViewModel);
+                stockManagerWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"打开股票管理窗口失败: {ex.Message}";
             }
         }
 

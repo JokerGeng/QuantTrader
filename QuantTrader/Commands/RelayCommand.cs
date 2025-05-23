@@ -54,12 +54,37 @@ namespace QuantTrader.Commands
 
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null || _canExecute((T)parameter);
+            if (parameter is null && !typeof(T).IsValueType)
+            {
+                return _canExecute?.Invoke(default(T)) ?? true;
+            }
+
+            // Type safety check
+            if (parameter is not null && parameter is not T)
+            {
+                return false;
+            }
+
+            return _canExecute?.Invoke((T?)parameter) ?? true;
         }
 
         public void Execute(object parameter)
         {
-            _execute((T)parameter);
+            if (CanExecute(parameter))
+            {
+                // Handle null parameter gracefully
+                if (parameter is null && !typeof(T).IsValueType)
+                {
+                    _execute(default(T));
+                    return;
+                }
+
+                if (parameter is T typedParameter)
+                {
+                    _execute(typedParameter);
+                }
+            }
+
         }
     }
 }

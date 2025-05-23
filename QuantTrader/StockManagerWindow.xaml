@@ -1,0 +1,264 @@
+﻿<Window x:Class="QuantTrader.StockManagerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuantTrader"
+        xmlns:vm="clr-namespace:QuantTrader.ViewModels"
+        xmlns:cvt="clr-namespace:QuantTrader.Converts"
+        mc:Ignorable="d"
+        Title="股票管理和策略运行" Height="700" Width="1200"
+        WindowStartupLocation="CenterOwner"
+        d:DataContext="{d:DesignInstance vm:StockManagerViewModel}">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="5,2"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="MinWidth" Value="80"/>
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="AlternatingRowBackground" Value="#F5F5F5"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#DDDDDD"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#DDDDDD"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+        </Style>
+
+        <!-- 价格涨跌颜色转换器 -->
+        <cvt:PriceChangeColorConverter x:Key="PriceChangeColorConverter"/>
+        <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- 按钮样式 -->
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#3498DB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2980B9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2980B9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#27AE60"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#229954"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#229954"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#E74C3C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#C0392B"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#C0392B"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧：股票搜索和添加 -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 搜索框 -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" 
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="14" Height="35"
+                         BorderBrush="#3498DB" BorderThickness="2">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                            <Style.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <VisualBrush Stretch="None" AlignmentX="Left" AlignmentY="Center">
+                                                <VisualBrush.Visual>
+                                                    <TextBlock Text="输入股票代码、名称或拼音搜索..." 
+                                                               Foreground="#999999" FontSize="14"/>
+                                                </VisualBrush.Visual>
+                                            </VisualBrush>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="🔍" FontSize="16" VerticalAlignment="Center" 
+                               Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}"/>
+                    <TextBlock Text="⏳" FontSize="16" VerticalAlignment="Center"
+                               Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- 搜索结果标题 -->
+            <TextBlock Grid.Row="1" Text="搜索结果" FontSize="14" FontWeight="Bold" 
+                       Margin="5,10,5,5" Foreground="#2C3E50"/>
+
+            <!-- 搜索结果列表 -->
+            <DataGrid Grid.Row="2" ItemsSource="{Binding SearchResults}" 
+                      SelectedItem="{Binding SelectedStock}" Margin="5,0,5,10">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="代码" Binding="{Binding Symbol}" Width="80"/>
+                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="120"/>
+                    <DataGridTextColumn Header="市场" Binding="{Binding Market}" Width="60"/>
+                    <DataGridTextColumn Header="行业" Binding="{Binding Industry}" Width="*"/>
+                    <DataGridTemplateColumn Header="操作" Width="60">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding DataContext.AddStockCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}" Style="{StaticResource SuccessButton}"
+                                        Width="30" Height="25" FontSize="16" FontWeight="Bold"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!-- 右侧：已选股票和策略管理 -->
+        <Grid Grid.Column="1" Margin="10,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 标题和操作按钮 -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="已选股票" FontSize="16" FontWeight="Bold" 
+                           Foreground="#2C3E50" VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="全选" Command="{Binding SelectAllCommand}"/>
+                    <Button Content="刷新价格" Command="{Binding RefreshPricesCommand}" Style="{StaticResource PrimaryButton}"/>
+                    <Button Content="清空" Command="{Binding ClearAllCommand}" Style="{StaticResource DangerButton}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- 股票列表 -->
+            <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedStocks}" Margin="0,10">
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn Header="选择" Binding="{Binding IsSelected}" Width="50"/>
+                    <DataGridTextColumn Header="代码" Binding="{Binding Symbol}" Width="80"/>
+                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="100"/>
+                    <DataGridTextColumn Header="现价" Binding="{Binding CurrentPrice, StringFormat=F2}" Width="80">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{Binding ChangePercent, Converter={StaticResource PriceChangeColorConverter}}"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="涨跌%" Binding="{Binding ChangePercent, StringFormat=F2}" Width="80">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{Binding ChangePercent, Converter={StaticResource PriceChangeColorConverter}}"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="成交量" Binding="{Binding VolumeDisplay}" Width="80"/>
+                    <DataGridTextColumn Header="策略状态" Binding="{Binding StrategyStatus}" Width="120"/>
+                    <DataGridTemplateColumn Header="操作" Width="60">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="×" Command="{Binding DataContext.RemoveStockCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}" Style="{StaticResource DangerButton}"
+                                        Width="30" Height="25" FontSize="16" FontWeight="Bold"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- 策略应用区域 -->
+            <GroupBox Grid.Row="2" Header="策略应用" Margin="0,10" Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 策略模板选择 -->
+                    <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="选择策略模板：" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <ItemsControl ItemsSource="{Binding StrategyTemplates}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Name}" 
+                                            Command="{Binding DataContext.ApplyStrategyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource SuccessButton}"
+                                            ToolTip="{Binding Description}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </WrapPanel>
+
+                    <!-- 批量策略控制 -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <Button Content="启动所有策略" Command="{Binding StartAllStrategiesCommand}" 
+                                Style="{StaticResource SuccessButton}"/>
+                        <Button Content="停止所有策略" Command="{Binding StopAllStrategiesCommand}" 
+                                Style="{StaticResource DangerButton}"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+
+            <!-- 状态栏 -->
+            <Border Grid.Row="3" Background="#ECF0F1" BorderBrush="#BDC3C7" BorderThickness="1" 
+                    Margin="0,10,0,0" Padding="10,5">
+                <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="#2C3E50"/>
+            </Border>
+        </Grid>
+    </Grid>
+
+</Window>

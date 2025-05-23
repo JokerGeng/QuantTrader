@@ -34,6 +34,18 @@
             <Setter Property="Padding" Value="10,5"/>
         </Style>
 
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#3498DB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2980B9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2980B9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- 数字格式化转换器 -->
         <cvt:DecimalFormatConverter x:Key="DecimalFormat"/>
         <cvt:ColorConverterPnL x:Key="PnLColorConverter"/> 
@@ -66,6 +78,8 @@
                     IsEnabled="{Binding SelectedStrategy, Converter={StaticResource BoolToVisibility}}"/>
             <Button Command="{Binding CreateCustomStrategyCommand}"  Content="Create Script Strategy" 
                     IsEnabled="{Binding IsEngineRunning}"/>
+            <Button Command="{Binding OpenStockManagerCommand}" Content="股票管理" IsEnabled="{Binding IsEngineRunning}"
+                    Style="{StaticResource PrimaryButton}"/>
         </ToolBar>
 
         <!-- 账户信息面板 -->

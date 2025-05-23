@@ -11,6 +11,9 @@
     <Compile Update="ScriptEditorWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="StockManagerWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="StrategyConfigWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
