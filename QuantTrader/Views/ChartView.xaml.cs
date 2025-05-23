@@ -14,7 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using QuantTrader.ViewModels;
 
-namespace QuantTrader
+namespace QuantTrader.Views
 {
     /// <summary>
     /// ChartView.xaml 的交互逻辑

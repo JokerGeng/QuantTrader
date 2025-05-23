@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:QuantTrader"
         xmlns:vm="clr-namespace:QuantTrader.ViewModels"
         xmlns:cvt="clr-namespace:QuantTrader.Converts"
+        xmlns:view="clr-namespace:QuantTrader.Views"
         mc:Ignorable="d"
         Title="Quant Trader" Height="800" Width="1200"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
@@ -66,6 +67,7 @@
             <Button Command="{Binding StartEngineCommand}" Content="Start Engine"/>
             <Button Command="{Binding StopEngineCommand}" Content="Stop Engine" IsEnabled="{Binding IsEngineRunning}"/>
             <Separator/>
+            <Button Command="{Binding OpenStrategyManagerCommand}" Content="Strategy Manager"/>
             <Button Command="{Binding AddStrategyCommand}" Content="Add Strategy" 
                     IsEnabled="{Binding IsEngineRunning}"/>
             <Button Command="{Binding RemoveStrategyCommand}" Content="Remove Strategy" 
@@ -206,7 +208,7 @@
 
             <!-- 图表标签页 -->
             <TabItem Header="Charts">
-                <local:ChartView/>
+                <view:ChartView/>
             </TabItem>
         </TabControl>
 

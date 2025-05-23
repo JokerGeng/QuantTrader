@@ -1,3 +1,5 @@
 ﻿/.vs/
 /QuantTrader/bin/
 /QuantTrader/obj
+/MvvmLight/obj
+/MvvmLight/bin

@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using QuantTrader.ViewModels;
 
-namespace QuantTrader
+namespace QuantTrader.Views
 {
     /// <summary>
     /// StrategyConfigWindow.xaml 的交互逻辑

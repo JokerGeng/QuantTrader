@@ -5,7 +5,7 @@ using QuantTrader.Strategies;
 using QuantTrader.ViewModels;
 using System.Xml;
 
-namespace QuantTrader
+namespace QuantTrader.Views
 {
     /// <summary>
     /// ScriptEditorWindow.xaml 的交互逻辑

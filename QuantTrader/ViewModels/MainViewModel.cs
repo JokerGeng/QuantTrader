@@ -12,6 +12,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using QuantTrader.BrokerServices;
 using QuantTrader.MarketDatas;
+using QuantTrader.Views;
 
 namespace QuantTrader.ViewModels
 {
@@ -82,8 +83,8 @@ namespace QuantTrader.ViewModels
         public ICommand ConfigureStrategyCommand { get; }
         public ICommand ReconnectBrokerCommand { get; }
         public ICommand CreateCustomStrategyCommand { get; }
-
         public ICommand OpenStockManagerCommand { get; }
+        public ICommand OpenStrategyManagerCommand {  get; }
 
         public MainViewModel(IServiceProvider serviceProvider ,ITradingEngine tradingEngine)
         {
@@ -112,6 +113,7 @@ namespace QuantTrader.ViewModels
             ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, _ => !IsBrokerConnected);
             CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy, _ => IsEngineRunning);
             OpenStockManagerCommand = new RelayCommand(_ => ExecuteOpenStockManager(), _ => IsEngineRunning);
+            OpenStrategyManagerCommand = new RelayCommand(_ => ExecuteOpenStrategyManager(), _ => IsEngineRunning);
             // 订阅交易引擎事件
             _tradingEngine.SignalGenerated += OnSignalGenerated;
             _tradingEngine.OrderExecuted += OnOrderExecuted;
@@ -284,6 +286,18 @@ namespace QuantTrader.ViewModels
             catch (Exception ex)
             {
                 StatusMessage = $"Error configuring strategy: {ex.Message}";
+            }
+        }
+
+        private void ExecuteOpenStrategyManager()
+        {
+            try
+            {
+                
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"打开Strategy管理窗口失败: {ex.Message}";
             }
         }
 
