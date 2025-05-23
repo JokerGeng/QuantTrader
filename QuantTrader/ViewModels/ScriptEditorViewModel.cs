@@ -100,7 +100,7 @@ namespace QuantTrader.ViewModels
             // 初始化命令
             ValidateCommand = new AsyncRelayCommand(ExecuteValidateAsync);
             SaveCommand = new AsyncRelayCommand(ExecuteSaveAsync);
-            CancelCommand = new RelayCommand(_ => EditorCancelled?.Invoke());
+            CancelCommand = new RelayCommand(() => EditorCancelled?.Invoke());
 
             // 初始化默认参数
             InitializeDefaultParameters();
@@ -158,7 +158,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteValidateAsync(object parameter)
+        private async Task ExecuteValidateAsync()
         {
             if (string.IsNullOrWhiteSpace(ScriptCode))
             {
@@ -195,7 +195,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteSaveAsync(object parameter)
+        private async Task ExecuteSaveAsync()
         {
             if (string.IsNullOrWhiteSpace(ScriptName))
             {

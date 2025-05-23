@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using QuantTrader.Commands;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using QuantTrader.Commands;
 
 namespace QuantTrader.ViewModels
 {
@@ -77,8 +72,8 @@ namespace QuantTrader.ViewModels
             }
 
             // 初始化命令
-            SaveCommand = new RelayCommand(_ => ExecuteSave());
-            CancelCommand = new RelayCommand(_ => CancelRequested?.Invoke());
+            SaveCommand = new RelayCommand(ExecuteSave);
+            CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
 
             // 默认为新策略
             IsNewStrategy = true;

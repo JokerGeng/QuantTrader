@@ -57,7 +57,7 @@ namespace QuantTrader.ViewModels
             _marketDataService = marketDataService;
 
             // 初始化命令
-            RefreshChartCommand = new AsyncRelayCommand(_ => RefreshChartAsync());
+            RefreshChartCommand = new AsyncRelayCommand(RefreshChartAsync);
 
             // 初始化图表控制器
             PlotController = new PlotController();

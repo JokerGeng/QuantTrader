@@ -103,17 +103,17 @@ namespace QuantTrader.ViewModels
             }
 
             // 初始化命令
-            StartEngineCommand = new AsyncRelayCommand(ExecuteStartEngineAsync, _ => !IsEngineRunning);
-            StopEngineCommand = new AsyncRelayCommand(ExecuteStopEngineAsync, _ => IsEngineRunning);
-            AddStrategyCommand = new AsyncRelayCommand(ExecuteAddStrategyAsync, _ => IsEngineRunning);
-            RemoveStrategyCommand = new AsyncRelayCommand(ExecuteRemoveStrategyAsync, _ => SelectedStrategy != null);
-            StartStrategyCommand = new AsyncRelayCommand(ExecuteStartStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status != StrategyStatus.Running);
-            StopStrategyCommand = new AsyncRelayCommand(ExecuteStopStrategyAsync, _ => SelectedStrategy != null && SelectedStrategy.Status == StrategyStatus.Running);
-            ConfigureStrategyCommand = new AsyncRelayCommand(ExecuteConfigureStrategyAsync, _ => SelectedStrategy != null);
-            ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, _ => !IsBrokerConnected);
-            CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy, _ => IsEngineRunning);
-            OpenStockManagerCommand = new RelayCommand(_ => ExecuteOpenStockManager(), _ => IsEngineRunning);
-            OpenStrategyManagerCommand = new RelayCommand(_ => ExecuteOpenStrategyManager(), _ => IsEngineRunning);
+            StartEngineCommand = new AsyncRelayCommand(ExecuteStartEngineAsync, ()=> !IsEngineRunning);
+            StopEngineCommand = new AsyncRelayCommand(ExecuteStopEngineAsync, () => IsEngineRunning);
+            AddStrategyCommand = new AsyncRelayCommand(ExecuteAddStrategyAsync, () => IsEngineRunning);
+            RemoveStrategyCommand = new AsyncRelayCommand(ExecuteRemoveStrategyAsync, () => SelectedStrategy != null);
+            StartStrategyCommand = new AsyncRelayCommand(ExecuteStartStrategyAsync, () => SelectedStrategy != null && SelectedStrategy.Status != StrategyStatus.Running);
+            StopStrategyCommand = new AsyncRelayCommand(ExecuteStopStrategyAsync, () => SelectedStrategy != null && SelectedStrategy.Status == StrategyStatus.Running);
+            ConfigureStrategyCommand = new AsyncRelayCommand(ExecuteConfigureStrategyAsync, () => SelectedStrategy != null);
+            ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, () => !IsBrokerConnected);
+            CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy, () => IsEngineRunning);
+            OpenStockManagerCommand = new RelayCommand(ExecuteOpenStockManager, () => IsEngineRunning);
+            OpenStrategyManagerCommand = new RelayCommand( ExecuteOpenStrategyManager, () => IsEngineRunning);
             // 订阅交易引擎事件
             _tradingEngine.SignalGenerated += OnSignalGenerated;
             _tradingEngine.OrderExecuted += OnOrderExecuted;
@@ -121,7 +121,7 @@ namespace QuantTrader.ViewModels
             _tradingEngine.AccountUpdated += OnAccountUpdated;
         }
 
-        private async Task ExecuteStartEngineAsync(object parameter)
+        private async Task ExecuteStartEngineAsync()
         {
             try
             {
@@ -139,7 +139,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteStopEngineAsync(object parameter)
+        private async Task ExecuteStopEngineAsync()
         {
             try
             {
@@ -155,7 +155,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteAddStrategyAsync(object parameter)
+        private async Task ExecuteAddStrategyAsync()
         {
             try
             {
@@ -188,7 +188,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteRemoveStrategyAsync(object parameter)
+        private async Task ExecuteRemoveStrategyAsync()
         {
             if (SelectedStrategy == null)
                 return;
@@ -212,7 +212,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteStartStrategyAsync(object parameter)
+        private async Task ExecuteStartStrategyAsync()
         {
             if (SelectedStrategy == null)
                 return;
@@ -233,7 +233,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteStopStrategyAsync(object parameter)
+        private async Task ExecuteStopStrategyAsync()
         {
             if (SelectedStrategy == null)
                 return;
@@ -254,7 +254,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteConfigureStrategyAsync(object parameter)
+        private async Task ExecuteConfigureStrategyAsync()
         {
             if (SelectedStrategy == null)
                 return;
@@ -318,7 +318,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private void ExecuteReconnectBroker(object parameter)
+        private void ExecuteReconnectBroker()
         {
             try
             {
@@ -345,7 +345,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private  void ExecuteCreateCustomStrategy(object parameter)
+        private  void ExecuteCreateCustomStrategy()
         {
             try
             {

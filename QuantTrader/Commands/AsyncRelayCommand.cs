@@ -9,28 +9,31 @@ namespace QuantTrader.Commands
 {
     public class AsyncRelayCommand : ICommand
     {
-        private readonly Func<object, Task> _execute;
-        private readonly Predicate<object> _canExecute;
+        private readonly Func<Task> _execute;
+        private readonly Func<bool> _canExecute;
         private bool _isExecuting;
 
-        public event EventHandler CanExecuteChanged
+        public event EventHandler? CanExecuteChanged;
+        public AsyncRelayCommand(Func<Task> execute)
         {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            ArgumentNullException.ThrowIfNull(execute);
+            this._execute = execute;
         }
 
-        public AsyncRelayCommand(Func<object, Task> execute, Predicate<object> canExecute = null)
+        public AsyncRelayCommand(Func<Task> execute, Func<bool> canExecute)
         {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
+            ArgumentNullException.ThrowIfNull(execute);
+            ArgumentNullException.ThrowIfNull(canExecute);
+            this._execute = execute;
+            this._canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
-            return !_isExecuting && (_canExecute == null || _canExecute(parameter));
+            return !_isExecuting && (_canExecute == null || _canExecute.Invoke());
         }
 
-        public async void Execute(object parameter)
+        public async void Execute(object? parameter)
         {
             if (!CanExecute(parameter))
                 return;
@@ -40,7 +43,7 @@ namespace QuantTrader.Commands
                 _isExecuting = true;
                 CommandManager.InvalidateRequerySuggested();
 
-                await _execute(parameter);
+                await _execute();
             }
             finally
             {
@@ -53,27 +56,31 @@ namespace QuantTrader.Commands
     public class AsyncRelayCommand<T> : ICommand
     {
         private readonly Func<T, Task> _execute;
-        private readonly Predicate<T> _canExecute;
+        private readonly Predicate<T?> _canExecute;
         private bool _isExecuting;
 
-        public event EventHandler CanExecuteChanged
+        public event EventHandler? CanExecuteChanged;
+
+        public AsyncRelayCommand(Func<T, Task> execute)
         {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            ArgumentNullException.ThrowIfNull(execute);
+            this._execute = execute;
         }
 
-        public AsyncRelayCommand(Func<T, Task> execute, Predicate<T> canExecute = null)
+        public AsyncRelayCommand(Func<T, Task> execute, Predicate<T?> canExecute)
         {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
+            ArgumentNullException.ThrowIfNull(execute);
+            ArgumentNullException.ThrowIfNull(canExecute);
+            this._execute = execute;
+            this._canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
-            return !_isExecuting && (_canExecute == null || _canExecute((T)parameter));
+            return !_isExecuting && _canExecute?.Invoke((T?)parameter) != false;
         }
 
-        public async void Execute(object parameter)
+        public async void Execute(object? parameter)
         {
             if (!CanExecute(parameter))
                 return;
@@ -81,14 +88,12 @@ namespace QuantTrader.Commands
             try
             {
                 _isExecuting = true;
-                CommandManager.InvalidateRequerySuggested();
 
                 await _execute((T)parameter);
             }
             finally
             {
                 _isExecuting = false;
-                CommandManager.InvalidateRequerySuggested();
             }
         }
     }

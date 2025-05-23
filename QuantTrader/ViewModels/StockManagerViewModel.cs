@@ -74,12 +74,12 @@ namespace QuantTrader.ViewModels
             // 初始化命令
             AddStockCommand = new RelayCommand<StockInfo>(ExecuteAddStock, stock => stock != null);
             RemoveStockCommand = new RelayCommand<StockInfo>(ExecuteRemoveStock, stock => stock != null);
-            ClearAllCommand = new RelayCommand(_ => ExecuteClearAll(), _ => SelectedStocks.Count > 0);
-            SelectAllCommand = new RelayCommand(_ => ExecuteSelectAll());
+            ClearAllCommand = new RelayCommand(ExecuteClearAll, ()=> SelectedStocks.Count > 0);
+            SelectAllCommand = new RelayCommand( ExecuteSelectAll);
             ApplyStrategyCommand = new AsyncRelayCommand<StrategyTemplateViewModel>(ExecuteApplyStrategyAsync);
-            StartAllStrategiesCommand = new AsyncRelayCommand(_ => ExecuteStartAllStrategiesAsync());
-            StopAllStrategiesCommand = new AsyncRelayCommand(_ => ExecuteStopAllStrategiesAsync());
-            RefreshPricesCommand = new AsyncRelayCommand(_ => ExecuteRefreshPricesAsync());
+            StartAllStrategiesCommand = new AsyncRelayCommand(ExecuteStartAllStrategiesAsync);
+            StopAllStrategiesCommand = new AsyncRelayCommand(ExecuteStopAllStrategiesAsync);
+            RefreshPricesCommand = new AsyncRelayCommand(ExecuteRefreshPricesAsync);
 
             // 初始化策略模板
             InitializeStrategyTemplates();

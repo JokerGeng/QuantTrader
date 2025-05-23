@@ -105,8 +105,8 @@ namespace QuantTrader.ViewModels
             InitializeAvailableBrokers();
 
             // 初始化命令
-            LoginCommand = new AsyncRelayCommand(_ => ExecuteLoginAsync(), _ => CanLogin);
-            CancelCommand = new RelayCommand(_ => LoginCancelled?.Invoke());
+            LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync, () => CanLogin);
+            CancelCommand = new RelayCommand(()=> LoginCancelled?.Invoke());
 
             // 加载保存的凭据
             LoadSavedCredentials();
