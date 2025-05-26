@@ -8,7 +8,11 @@ namespace QuantTrader.Commands
         private readonly Predicate<T?> _canExecute;
         private bool _isExecuting;
 
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
 
         public AsyncRelayCommand(Func<T, Task> execute)
         {

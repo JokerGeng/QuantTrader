@@ -13,7 +13,12 @@ namespace QuantTrader.Commands
         private readonly Func<bool> _canExecute;
         private bool _isExecuting;
 
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
         public AsyncRelayCommand(Func<Task> execute)
         {
             ArgumentNullException.ThrowIfNull(execute);
