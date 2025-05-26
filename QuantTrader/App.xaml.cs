@@ -37,6 +37,7 @@ namespace QuantTrader
                     "QuantTrader",
                     "Data");
                 services.AddSingleton<BrokerServiceFactory>();
+                services.AddSingleton<MarketDataServiceFactory>();
                 services.AddSingleton<IMarketDataService, SimulatedMarketDataService>();
                 services.AddSingleton<IDataRepository>(provider => new CsvDataRepository(dataPath));
                 //注册模型模型

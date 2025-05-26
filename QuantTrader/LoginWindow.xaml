@@ -7,12 +7,13 @@
         xmlns:vm="clr-namespace:QuantTrader.ViewModels"
         xmlns:cvt="clr-namespace:QuantTrader.Converts"
         mc:Ignorable="d"
-        Title="QuantTrader - Login" Height="500" Width="450"
+        Title="QuantTrader - Login" Height="650" Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         d:DataContext="{d:DesignInstance vm:LoginViewModel}">
 
     <Window.Resources>
+        <!-- 样式定义 -->
         <Style TargetType="TextBlock">
             <Setter Property="Margin" Value="5"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -46,54 +47,16 @@
             <Setter Property="Margin" Value="5"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-
-        <!-- 自定义样式 -->
-        <Style x:Key="TitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="24"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,20,0,30"/>
-            <Setter Property="Foreground" Value="#2C3E50"/>
-        </Style>
-
-        <Style x:Key="StatusStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#E74C3C"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Style TargetType="GroupBox">
             <Setter Property="Margin" Value="5"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Padding" Value="10"/>
         </Style>
 
-        <Style x:Key="LoginButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Background" Value="#3498DB"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#2980B9"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#2980B9"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="#BDC3C7"/>
-                    <Setter Property="BorderBrush" Value="#95A5A6"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="CancelButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Background" Value="#95A5A6"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#7F8C8D"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#7F8C8D"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style> 
-
+        <!-- 转换器 -->
         <cvt:BoolToVisibilityConverter x:Key="BrokerDescriptionConverter"/>
         <cvt:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <cvt:LoginModeConverter x:Key="LoginModeConverter"/>
     </Window.Resources>
 
     <Grid Background="#ECF0F1">
@@ -104,133 +67,179 @@
         </Grid.RowDefinitions>
 
         <!-- 标题 -->
-        <TextBlock Grid.Row="0" Text="Quant Trader" Style="{StaticResource TitleStyle}"/>
+        <TextBlock Grid.Row="0" Text="量化交易系统登录" 
+                   FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"
+                   Margin="0,20,0,20" Foreground="#2C3E50"/>
 
-        <!-- 登录表单 -->
-        <Border Grid.Row="1" Background="White" CornerRadius="8" Margin="30,0,30,20"
-                BorderBrush="#BDC3C7" BorderThickness="1">
-            <StackPanel Margin="30,20">
-                <!-- 券商类型选择 -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="120"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Broker:" FontWeight="Bold"/>
-                    <ComboBox Grid.Column="1" 
-                              ItemsSource="{Binding AvailableBrokers}"
-                              SelectedValue="{Binding SelectedBrokerType}"
-                              SelectedValuePath="Type"
-                              DisplayMemberPath="Name"/>
-                </Grid>
+        <!-- 配置区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="30,0">
 
-                <!-- 券商描述 -->
-                <TextBlock Text="{Binding SelectedBrokerType, Converter={StaticResource BrokerDescriptionConverter}}"
-                           FontStyle="Italic" FontSize="11" Foreground="#7F8C8D" Margin="125,-5,5,10"/>
+                <!-- 登录模式选择 -->
+                <GroupBox Header="登录模式">
+                    <StackPanel>
+                        <ComboBox ItemsSource="{Binding AvailableLoginModes}"
+                                  SelectedValue="{Binding SelectedMode}"
+                                  SelectedValuePath="Mode"
+                                  DisplayMemberPath="Name"/>
+                        <TextBlock Text="{Binding ModeDescription}" 
+                                   FontStyle="Italic" FontSize="11" 
+                                   Foreground="#7F8C8D" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </GroupBox>
 
-                <!-- 服务器地址 -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="120"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Server:" FontWeight="Bold"/>
-                    <TextBox Grid.Column="1" Text="{Binding ServerAddress}" IsReadOnly="True"/>
-                </Grid>
+                <!-- 券商配置 -->
+                <GroupBox Header="券商配置">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                <!-- 用户名 -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="120"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Username:" FontWeight="Bold"/>
-                    <TextBox Grid.Column="1" Text="{Binding Username}"/>
-                </Grid>
+                        <!-- 券商类型 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="券商类型:" FontWeight="Bold"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" 
+                                  ItemsSource="{Binding AvailableBrokers}"
+                                  SelectedValue="{Binding SelectedBrokerType}"
+                                  SelectedValuePath="Type"
+                                  DisplayMemberPath="Name"/>
 
-                <!-- 密码 -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="120"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Password:" FontWeight="Bold"/>
-                    <PasswordBox Grid.Column="1" x:Name="PasswordBox" 
-                                 PasswordChanged="PasswordBox_PasswordChanged"/>
-                </Grid>
+                        <!-- 服务器地址 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="服务器:" FontWeight="Bold"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BrokerServerAddress}"/>
+                        <Button Grid.Row="1" Grid.Column="2" Content="测试" 
+                                Command="{Binding TestBrokerConnectionCommand}" Width="60"/>
 
-                <!-- 记住密码 -->
-                <CheckBox Content="Remember credentials" 
+                        <!-- 用户名 -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="用户名:" FontWeight="Bold"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" 
+                                 Text="{Binding BrokerUsername}"/>
+
+                        <!-- 密码 -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="密码:" FontWeight="Bold"/>
+                        <PasswordBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" 
+                                     x:Name="BrokerPasswordBox" 
+                                     PasswordChanged="BrokerPasswordBox_PasswordChanged"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 行情数据源配置 (分离模式时显示) -->
+                <GroupBox Header="行情数据源配置" 
+                          Visibility="{Binding IsMarketDataConfigVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 数据源类型 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="数据源:" FontWeight="Bold"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" 
+                                  ItemsSource="{Binding AvailableMarketDataSources}"
+                                  SelectedValue="{Binding SelectedMarketDataSource}"
+                                  SelectedValuePath="Type"
+                                  DisplayMemberPath="Name"/>
+
+                        <!-- 服务器地址 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="服务器:" FontWeight="Bold"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding MarketDataServerAddress}"/>
+                        <Button Grid.Row="1" Grid.Column="2" Content="测试" 
+                                Command="{Binding TestMarketDataConnectionCommand}" Width="60"/>
+
+                        <!-- 用户名 (需要登录的数据源显示) -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="用户名:" FontWeight="Bold"
+                                   Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" 
+                                 Text="{Binding MarketDataUsername}"
+                                 Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- 密码 (需要登录的数据源显示) -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="密码:" FontWeight="Bold"
+                                   Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <PasswordBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" 
+                                     x:Name="MarketDataPasswordBox" 
+                                     PasswordChanged="MarketDataPasswordBox_PasswordChanged"
+                                     Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- API Key (支持API Key的数据源显示) -->
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="API Key:" FontWeight="Bold"
+                                   Visibility="{Binding IsApiKeyVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" 
+                                 Text="{Binding MarketDataApiKey}"
+                                 Visibility="{Binding IsApiKeyVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 记住设置 -->
+                <CheckBox Content="记住登录设置 (不保存密码)" 
                           IsChecked="{Binding RememberCredentials}"
-                          Margin="125,10,5,10"/>
+                          Margin="5,10"/>
 
                 <!-- 状态消息 -->
                 <TextBlock Text="{Binding StatusMessage}" 
-                           Style="{StaticResource StatusStyle}"
+                           Foreground="#E74C3C" FontSize="12"
+                           TextWrapping="Wrap" Margin="5,10"
                            Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
 
-                <!-- 按钮 -->
-                <Grid Margin="0,20,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Button Grid.Column="0" 
-                            Command="{Binding LoginCommand}"
-                            Style="{StaticResource LoginButtonStyle}"
-                            IsDefault="True">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="Login" Visibility="{Binding IsLogging, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}"/>
-                                <StackPanel Orientation="Horizontal" Visibility="{Binding IsLogging, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <TextBlock Text="Connecting" VerticalAlignment="Center"/>
-                                    <TextBlock Text="..." VerticalAlignment="Center" Margin="5,0,0,0">
-                                        <TextBlock.RenderTransform>
-                                            <RotateTransform x:Name="LoadingRotation" CenterX="10" CenterY="10"/>
-                                        </TextBlock.RenderTransform>
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsLogging}" Value="True">
-                                                        <DataTrigger.EnterActions>
-                                                            <BeginStoryboard>
-                                                                <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)"
-                                                                                   From="0" To="360" Duration="0:0:1" RepeatBehavior="Forever"/>
-                                                                </Storyboard>
-                                                            </BeginStoryboard>
-                                                        </DataTrigger.EnterActions>
-                                                        <DataTrigger.ExitActions>
-                                                            <BeginStoryboard>
-                                                                <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)"
-                                                                                   To="0" Duration="0:0:0.1"/>
-                                                                </Storyboard>
-                                                            </BeginStoryboard>
-                                                        </DataTrigger.ExitActions>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
-
-                    <Button Grid.Column="1" Content="Cancel" 
-                            Command="{Binding CancelCommand}"
-                            Style="{StaticResource CancelButtonStyle}"
-                            IsCancel="True"/>
-                </Grid>
             </StackPanel>
-        </Border>
+        </ScrollViewer>
+
+        <!-- 底部按钮 -->
+        <Grid Grid.Row="2" Margin="30,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="登录" 
+                    Command="{Binding LoginCommand}"
+                    Background="#3498DB" Foreground="White"
+                    IsDefault="True">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Background" Value="#3498DB"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLogging}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Content" Value="连接中..."/>
+                                <Setter Property="Background" Value="#BDC3C7"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding CanLogin}" Value="False">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Background" Value="#BDC3C7"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button Grid.Column="1" Content="取消" 
+                    Command="{Binding CancelCommand}"
+                    Background="#95A5A6" Foreground="White"
+                    IsCancel="True"/>
+        </Grid>
 
         <!-- 版权信息 -->
         <TextBlock Grid.Row="2" Text="© 2024 QuantTrader. All rights reserved." 
                    HorizontalAlignment="Center" FontSize="10" 
-                   Foreground="#7F8C8D" Margin="0,0,0,10"/>
+                   Foreground="#7F8C8D" Margin="0,60,0,10"
+                   VerticalAlignment="Bottom"/>
     </Grid>
 
 </Window>

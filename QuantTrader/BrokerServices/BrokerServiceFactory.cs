@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualBasic.ApplicationServices;
 using QuantTrader.MarketDatas;
 
 namespace QuantTrader.BrokerServices
@@ -15,6 +16,23 @@ namespace QuantTrader.BrokerServices
         public BrokerServiceFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+        }
+
+        /// <summary>
+        /// 创建券商服务
+        /// </summary>
+        public IBrokerService CreateBrokerService(string brokerType)
+        {
+            return brokerType.ToLower() switch
+            {
+                "simulated" => new SimulatedBrokerService("", ""),
+                "ctp" => new CtpBrokerService("",""),
+                "xtp" => new XtpBrokerService(),
+                "ths" => new ThsBrokerService(), // 同花顺
+                "gtja" => new GtjaBrokerService(), // 国泰君安
+                "zs" => new ZsBrokerService(), // 招商证券
+                _ => throw new ArgumentException($"Unsupported broker type: {brokerType}")
+            };
         }
 
         /// <summary>
@@ -38,7 +56,7 @@ namespace QuantTrader.BrokerServices
         /// </summary>
         public static string[] GetSupportedBrokerTypes()
         {
-            return new[] { "simulated", "ctp", "xtp" };
+            return new[] { "simulated", "ctp", "xtp", "ths", "gtja", "zs" };
         }
 
         /// <summary>

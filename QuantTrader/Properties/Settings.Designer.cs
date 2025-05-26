@@ -58,5 +58,65 @@ namespace QuantTrader.Properties {
                 this["ServerAddress"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("BrokerDirect")]
+        public string LoginMode {
+            get {
+                return ((string)(this["LoginMode"]));
+            }
+            set {
+                this["LoginMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("sina")]
+        public string MarketDataSource {
+            get {
+                return ((string)(this["MarketDataSource"]));
+            }
+            set {
+                this["MarketDataSource"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string MarketDataServerAddress {
+            get {
+                return ((string)(this["MarketDataServerAddress"]));
+            }
+            set {
+                this["MarketDataServerAddress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string MarketDataUsername {
+            get {
+                return ((string)(this["MarketDataUsername"]));
+            }
+            set {
+                this["MarketDataUsername"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string MarketDataApiKey {
+            get {
+                return ((string)(this["MarketDataApiKey"]));
+            }
+            set {
+                this["MarketDataApiKey"] = value;
+            }
+        }
     }
 }

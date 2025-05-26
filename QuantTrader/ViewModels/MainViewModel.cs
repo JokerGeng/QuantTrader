@@ -325,7 +325,7 @@ namespace QuantTrader.ViewModels
                 StatusMessage = "Attempting to reconnect to broker...";
 
                 // 显示登录窗口重新连接
-                var loginWindow = new LoginWindow(new LoginViewModel(new BrokerServiceFactory(_serviceProvider)));
+                var loginWindow = new LoginWindow(new LoginViewModel(new BrokerServiceFactory(_serviceProvider),new MarketDataServiceFactory(_serviceProvider)));
                 var result = loginWindow.ShowDialog();
 
                 if (result == true && loginWindow.BrokerService != null)

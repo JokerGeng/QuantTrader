@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using QuantTrader.BrokerServices;
+using QuantTrader.MarketDatas;
 using QuantTrader.ViewModels;
 
 namespace QuantTrader
@@ -24,6 +25,7 @@ namespace QuantTrader
         private readonly LoginViewModel _viewModel;
 
         public IBrokerService BrokerService { get; private set; }
+        public IMarketDataService MarketDataService { get; private set; }
 
         public LoginWindow(LoginViewModel viewModel)
         {
@@ -36,26 +38,22 @@ namespace QuantTrader
             _viewModel.LoginSuccessful += OnLoginSuccessful;
             _viewModel.LoginCancelled += OnLoginCancelled;
 
-            // 设置初始焦点
-            Loaded += (s, e) =>
+            // 设置密码框初始值
+            if (!string.IsNullOrEmpty(_viewModel.BrokerPassword))
             {
-                if (string.IsNullOrEmpty(_viewModel.Username))
-                {
-                    // 如果用户名为空，焦点设置到用户名输入框
-                    var usernameTextBox = FindName("UsernameTextBox") as System.Windows.Controls.TextBox;
-                    usernameTextBox?.Focus();
-                }
-                else
-                {
-                    // 如果用户名已填，焦点设置到密码输入框
-                    PasswordBox.Focus();
-                }
-            };
+                BrokerPasswordBox.Password = _viewModel.BrokerPassword;
+            }
+
+            if (!string.IsNullOrEmpty(_viewModel.MarketDataPassword))
+            {
+                MarketDataPasswordBox.Password = _viewModel.MarketDataPassword;
+            }
         }
 
-        private void OnLoginSuccessful(IBrokerService brokerService)
+        private void OnLoginSuccessful(IBrokerService brokerService, IMarketDataService marketDataService)
         {
             BrokerService = brokerService;
+            MarketDataService = marketDataService;
             DialogResult = true;
             Close();
         }
@@ -66,10 +64,14 @@ namespace QuantTrader
             Close();
         }
 
-        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        private void BrokerPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            // 同步密码到视图模型
-            _viewModel.Password = PasswordBox.Password;
+            _viewModel.BrokerPassword = BrokerPasswordBox.Password;
+        }
+
+        private void MarketDataPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            _viewModel.MarketDataPassword = MarketDataPasswordBox.Password;
         }
     }
 }

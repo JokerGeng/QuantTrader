@@ -11,5 +11,20 @@
     <Setting Name="ServerAddress" Type="System.String" Scope="User">
       <Value Profile="(Default)">localhost:8888</Value>
     </Setting>
+    <Setting Name="LoginMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">BrokerDirect</Value>
+    </Setting>
+    <Setting Name="MarketDataSource" Type="System.String" Scope="User">
+      <Value Profile="(Default)">sina</Value>
+    </Setting>
+    <Setting Name="MarketDataServerAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="MarketDataUsername" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="MarketDataApiKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>
