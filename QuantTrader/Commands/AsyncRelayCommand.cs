@@ -41,55 +41,7 @@ namespace QuantTrader.Commands
             try
             {
                 _isExecuting = true;
-                CommandManager.InvalidateRequerySuggested();
-
                 await _execute();
-            }
-            finally
-            {
-                _isExecuting = false;
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-    }
-
-    public class AsyncRelayCommand<T> : ICommand
-    {
-        private readonly Func<T, Task> _execute;
-        private readonly Predicate<T?> _canExecute;
-        private bool _isExecuting;
-
-        public event EventHandler? CanExecuteChanged;
-
-        public AsyncRelayCommand(Func<T, Task> execute)
-        {
-            ArgumentNullException.ThrowIfNull(execute);
-            this._execute = execute;
-        }
-
-        public AsyncRelayCommand(Func<T, Task> execute, Predicate<T?> canExecute)
-        {
-            ArgumentNullException.ThrowIfNull(execute);
-            ArgumentNullException.ThrowIfNull(canExecute);
-            this._execute = execute;
-            this._canExecute = canExecute;
-        }
-
-        public bool CanExecute(object? parameter)
-        {
-            return !_isExecuting && _canExecute?.Invoke((T?)parameter) != false;
-        }
-
-        public async void Execute(object? parameter)
-        {
-            if (!CanExecute(parameter))
-                return;
-
-            try
-            {
-                _isExecuting = true;
-
-                await _execute((T)parameter);
             }
             finally
             {

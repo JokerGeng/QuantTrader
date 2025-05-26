@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace MvvmLight.Command
+namespace QuantTrader.Commands
 {
     public class RelayCommand<T> : ICommand
     {
