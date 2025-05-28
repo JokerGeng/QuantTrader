@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:QuantTrader.ViewModels"
         xmlns:cvt="clr-namespace:QuantTrader.Converts"
         mc:Ignorable="d"
-        Title="QuantTrader - Login" Height="750" Width="500"
+        Title="QuantTrader - Login" Height="600" Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         d:DataContext="{d:DesignInstance vm:LoginViewModel}">
@@ -52,11 +52,12 @@
             <Setter Property="Padding" Value="10"/>
         </Style>
 
-        <!-- 转换器 -->
+        <!-- 转换器 --> 
         <cvt:BoolToVisibilityConverter x:Key="BrokerDescriptionConverter"/>
         <cvt:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <cvt:LoginModeConverter x:Key="LoginModeConverter"/>
+        <cvt:LoginModeToVisibilityConverter x:Key="LoginModeToVisibilityConverter"/>
     </Window.Resources>
 
     <Grid Background="#ECF0F1">
@@ -72,7 +73,7 @@
                    Margin="0,20,0,20" Foreground="#2C3E50"/>
 
         <!-- 配置区域 -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,8,0,78" Grid.RowSpan="2">
             <StackPanel Margin="30,0">
 
                 <!-- 登录模式选择 -->
@@ -80,9 +81,8 @@
                     <StackPanel>
                         <ComboBox ItemsSource="{Binding AvailableLoginModes}"
                                   SelectedValue="{Binding SelectedMode}"
-                                  SelectedValuePath="Mode"
                                   DisplayMemberPath="Name"/>
-                        <TextBlock Text="{Binding ModeDescription}" 
+                        <TextBlock Text="{Binding SelectedMode.Description}" 
                                    FontStyle="Italic" FontSize="11" 
                                    Foreground="#7F8C8D" TextWrapping="Wrap"/>
                     </StackPanel>
@@ -107,13 +107,12 @@
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="券商类型:" FontWeight="Bold"/>
                         <ComboBox Grid.Row="0" Grid.Column="1" 
                                   ItemsSource="{Binding AvailableBrokers}"
-                                  SelectedValue="{Binding SelectedBrokerType}"
-                                  SelectedValuePath="Type"
+                                  SelectedValue="{Binding SelectedBrokerInfo}"
                                   DisplayMemberPath="Name"/>
 
                         <!-- 服务器地址 -->
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="服务器:" FontWeight="Bold"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BrokerServerAddress}"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedBrokerInfo.DefaultServerAddress}"/>
                         <Button Grid.Row="1" Grid.Column="2" Content="测试" 
                                 Command="{Binding TestBrokerConnectionCommand}" Width="60"/>
 
@@ -132,7 +131,7 @@
 
                 <!-- 行情数据源配置 (分离模式时显示) -->
                 <GroupBox Header="行情数据源配置" 
-                          Visibility="{Binding IsMarketDataConfigVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                          Visibility="{Binding SelectedMode.Mode, Converter={StaticResource LoginModeToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -152,36 +151,35 @@
                         <ComboBox Grid.Row="0" Grid.Column="1" 
                                   ItemsSource="{Binding AvailableMarketDataSources}"
                                   SelectedValue="{Binding SelectedMarketDataSource}"
-                                  SelectedValuePath="Type"
                                   DisplayMemberPath="Name"/>
 
                         <!-- 服务器地址 -->
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="服务器:" FontWeight="Bold"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding MarketDataServerAddress}"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMarketDataSource.DefaultServerAddress}"/>
                         <Button Grid.Row="1" Grid.Column="2" Content="测试" 
                                 Command="{Binding TestMarketDataConnectionCommand}" Width="60"/>
 
                         <!-- 用户名 (需要登录的数据源显示) -->
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="用户名:" FontWeight="Bold"
-                                   Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                   Visibility="{Binding SelectedMarketDataSource.RequiresAuth, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" 
                                  Text="{Binding MarketDataUsername}"
-                                 Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                 Visibility="{Binding SelectedMarketDataSource.RequiresAuth, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                         <!-- 密码 (需要登录的数据源显示) -->
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="密码:" FontWeight="Bold"
-                                   Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                   Visibility="{Binding SelectedMarketDataSource.RequiresAuth, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         <PasswordBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" 
                                      x:Name="MarketDataPasswordBox" 
                                      PasswordChanged="MarketDataPasswordBox_PasswordChanged"
-                                     Visibility="{Binding IsMarketDataLoginVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                     Visibility="{Binding SelectedMarketDataSource.RequiresAuth, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                         <!-- API Key (支持API Key的数据源显示) -->
                         <TextBlock Grid.Row="4" Grid.Column="0" Text="API Key:" FontWeight="Bold"
-                                   Visibility="{Binding IsApiKeyVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                   Visibility="{Binding SelectedMarketDataSource.SupportsApiKey, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" 
                                  Text="{Binding MarketDataApiKey}"
-                                 Visibility="{Binding IsApiKeyVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                 Visibility="{Binding SelectedMarketDataSource.SupportsApiKey, Converter={StaticResource BoolToVisibilityConverter}}"/>
                     </Grid>
                 </GroupBox>
 

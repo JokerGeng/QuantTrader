@@ -13,12 +13,12 @@ namespace QuantTrader.Utils
         {
             System.Diagnostics.Debug.WriteLine($"=== 登录状态调试 ===");
             System.Diagnostics.Debug.WriteLine($"SelectedMode: {viewModel.SelectedMode}");
-            System.Diagnostics.Debug.WriteLine($"SelectedBrokerType: {viewModel.SelectedBrokerType}");
-            System.Diagnostics.Debug.WriteLine($"BrokerServerAddress: {viewModel.BrokerServerAddress}");
+            System.Diagnostics.Debug.WriteLine($"SelectedBrokerType: {viewModel.SelectedBrokerInfo.Type}");
+            System.Diagnostics.Debug.WriteLine($"BrokerServerAddress: {viewModel.SelectedBrokerInfo.DefaultServerAddress}");
             System.Diagnostics.Debug.WriteLine($"BrokerUsername: {viewModel.BrokerUsername}");
             System.Diagnostics.Debug.WriteLine($"BrokerPassword length: {viewModel.BrokerPassword?.Length ?? 0}");
             System.Diagnostics.Debug.WriteLine($"SelectedMarketDataSource: {viewModel.SelectedMarketDataSource}");
-            System.Diagnostics.Debug.WriteLine($"IsMarketDataConfigVisible: {viewModel.IsMarketDataConfigVisible}");
+            System.Diagnostics.Debug.WriteLine($"IsMarketDataConfigVisible: {viewModel.SelectedMode.ToString()}");
             System.Diagnostics.Debug.WriteLine($"IsLogging: {viewModel.IsLogging}");
             System.Diagnostics.Debug.WriteLine($"CanLogin: {viewModel.CanLogin}");
             System.Diagnostics.Debug.WriteLine($"===================");
