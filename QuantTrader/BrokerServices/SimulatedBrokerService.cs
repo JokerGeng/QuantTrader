@@ -6,7 +6,7 @@ namespace QuantTrader.BrokerServices
 {
     public class SimulatedBrokerService : IBrokerService, IDisposable
     {
-        private readonly IMarketDataService _marketDataService = new SimulatedMarketDataService();
+        private IMarketDataService _marketDataService = new SimulatedMarketDataService();
         private readonly Random _random = new Random();
         private readonly System.Timers.Timer _simulationTimer;
         private readonly Dictionary<string, Order> _orders = new Dictionary<string, Order>();
@@ -24,13 +24,10 @@ namespace QuantTrader.BrokerServices
 
         public IMarketDataService MarketDataService => _marketDataService;
 
-        public SimulatedBrokerService(string user, string password)
+        public SimulatedBrokerService()
         {
             _simulationTimer = new System.Timers.Timer(500); // 每500毫秒模拟一次订单执行
             _simulationTimer.Elapsed += OnSimulationTimerElapsed;
-
-            // 初始化模拟账户
-            _account = new Account("SIM001", 1000000);
         }
 
         public async Task<bool> ConnectAsync(string username, string password, string serverAddress)
@@ -56,6 +53,7 @@ namespace QuantTrader.BrokerServices
                 Version = "1.0.0"
             };
 
+            _account = new Account("simulated", 1000000);
             _simulationTimer.Start();
 
             // 触发连接状态变更事件
@@ -76,12 +74,12 @@ namespace QuantTrader.BrokerServices
             await Task.CompletedTask;
         }
 
-        public Task<Account> GetAccountInfoAsync()
+        public Account GetAccountInfo()
         {
             if (!_connected)
                 throw new InvalidOperationException("Not connected to broker.");
 
-            return Task.FromResult(_account);
+            return _account;
         }
 
         public Task<List<Position>> GetPositionsAsync()
@@ -378,6 +376,11 @@ namespace QuantTrader.BrokerServices
             _simulationTimer?.Stop();
             _simulationTimer?.Dispose();
             _ = DisconnectAsync();
+        }
+
+        public void SetMarketDataService(IMarketDataService marketDataService)
+        {
+            this._marketDataService = marketDataService;
         }
     }
 }

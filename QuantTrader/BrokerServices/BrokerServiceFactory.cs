@@ -25,28 +25,9 @@ namespace QuantTrader.BrokerServices
         {
             return brokerType.ToLower() switch
             {
-                "simulated" => new SimulatedBrokerService("", ""),
-                "ctp" => new CtpBrokerService("",""),
+                "simulated" => new SimulatedBrokerService(),
+                "ctp" => new CtpBrokerService(),
                 "xtp" => new XtpBrokerService(),
-                "ths" => new ThsBrokerService(), // 同花顺
-                "gtja" => new GtjaBrokerService(), // 国泰君安
-                "zs" => new ZsBrokerService(), // 招商证券
-                _ => throw new ArgumentException($"Unsupported broker type: {brokerType}")
-            };
-        }
-
-        /// <summary>
-        /// 创建券商服务
-        /// </summary>
-        public IBrokerService CreateBrokerService(string brokerType, string user, string password)
-        {
-            return brokerType.ToLower() switch
-            {
-                "simulated" => new SimulatedBrokerService(user, password),
-                "新浪" => new SinaBrokerService(user, password),
-                "东方财富" => new EastmoneyBrokerService(user, password),
-                "ctp" => new CtpBrokerService(user, password),
-                "xtp" => throw new NotImplementedException("XTP broker service not implemented yet"),
                 _ => throw new ArgumentException($"Unsupported broker type: {brokerType}")
             };
         }
@@ -56,7 +37,7 @@ namespace QuantTrader.BrokerServices
         /// </summary>
         public static string[] GetSupportedBrokerTypes()
         {
-            return new[] { "simulated", "ctp", "xtp", "ths", "gtja", "zs" };
+            return new[] { "simulated", "ctp", "xtp"};
         }
 
         /// <summary>

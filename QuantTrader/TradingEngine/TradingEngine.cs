@@ -55,7 +55,7 @@ namespace QuantTrader.TradingEngine
             }
 
             // 获取账户信息
-            Account = await _brokerService.GetAccountInfoAsync();
+            Account = _brokerService.GetAccountInfo();
 
             _isRunning = true;
 

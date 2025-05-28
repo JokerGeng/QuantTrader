@@ -35,7 +35,7 @@ namespace QuantTrader.ViewModels
                 if (SetProperty(ref _selectedMode, value))
                 {
                     OnModeChanged();
-                    RefreshCanLogin();
+                    OnPropertyChanged(nameof(CanLogin));
                     OnPropertyChanged(nameof(IsMarketDataConfigVisible));
                     OnPropertyChanged(nameof(ModeDescription));
                 }
@@ -50,7 +50,7 @@ namespace QuantTrader.ViewModels
                 if (SetProperty(ref _selectedBrokerType, value))
                 {
                     LoadDefaultBrokerSettings();
-                    RefreshCanLogin();
+                    OnPropertyChanged(nameof(CanLogin));
                 }
             }
         }
@@ -61,27 +61,29 @@ namespace QuantTrader.ViewModels
             set
             {
                 SetProperty(ref _brokerServerAddress, value);
-                RefreshCanLogin();
+                OnPropertyChanged(nameof(CanLogin));
             }
         }
 
+        [Required(ErrorMessage = "券商用户名必填")]
         public string BrokerUsername
         {
             get => _brokerUsername;
             set
             {
                 SetProperty(ref _brokerUsername, value);
-                RefreshCanLogin();
+                OnPropertyChanged(nameof(CanLogin));
             }
         }
 
+        [Required(ErrorMessage = "券商密码必填")]
         public string BrokerPassword
         {
             get => _brokerPassword;
             set
             {
                 SetProperty(ref _brokerPassword, value);
-                RefreshCanLogin();
+                OnPropertyChanged(nameof(CanLogin));
             }
         }
 
@@ -93,7 +95,7 @@ namespace QuantTrader.ViewModels
                 if (SetProperty(ref _selectedMarketDataSource, value))
                 {
                     LoadDefaultMarketDataSettings();
-                    RefreshCanLogin();
+                    OnPropertyChanged(nameof(CanLogin));
                     OnPropertyChanged(nameof(IsApiKeyVisible));
                     OnPropertyChanged(nameof(IsMarketDataLoginVisible));
                 }
@@ -103,51 +105,31 @@ namespace QuantTrader.ViewModels
         public string MarketDataServerAddress
         {
             get => _marketDataServerAddress;
-            set
-            {
-                SetProperty(ref _marketDataServerAddress, value);
-                RefreshCanLogin();
-            }
+            set => SetProperty(ref _marketDataServerAddress, value);
         }
 
         public string MarketDataUsername
         {
             get => _marketDataUsername;
-            set
-            {
-                SetProperty(ref _marketDataUsername, value);
-                RefreshCanLogin();
-            }
+            set => SetProperty(ref _marketDataUsername, value);
         }
 
         public string MarketDataPassword
         {
             get => _marketDataPassword;
-            set
-            {
-                SetProperty(ref _marketDataPassword, value);
-                RefreshCanLogin();
-            }
+            set => SetProperty(ref _marketDataPassword, value);
         }
 
         public string MarketDataApiKey
         {
             get => _marketDataApiKey;
-            set
-            {
-                SetProperty(ref _marketDataApiKey, value);
-                RefreshCanLogin();
-            }
+            set => SetProperty(ref _marketDataApiKey, value);
         }
 
         public bool IsLogging
         {
             get => _isLogging;
-            set
-            {
-                SetProperty(ref _isLogging, value);
-                RefreshCanLogin();
-            }
+            set => SetProperty(ref _isLogging, value);
         }
 
         public string StatusMessage
@@ -164,10 +146,8 @@ namespace QuantTrader.ViewModels
 
         // 界面显示控制属性
         public bool IsMarketDataConfigVisible => SelectedMode == LoginMode.Separated;
-        public bool IsApiKeyVisible => IsMarketDataConfigVisible &&
-            (SelectedMarketDataSource == "myquant" || SelectedMarketDataSource == "ricequant" || SelectedMarketDataSource == "jukuan");
-        public bool IsMarketDataLoginVisible => IsMarketDataConfigVisible &&
-            (SelectedMarketDataSource != "sina" && SelectedMarketDataSource != "eastmoney");
+        public bool IsApiKeyVisible => SelectedMarketDataSource == "myquant" || SelectedMarketDataSource == "ricequant";
+        public bool IsMarketDataLoginVisible => SelectedMarketDataSource != "sina" && SelectedMarketDataSource != "eastmoney";
 
         public string ModeDescription => SelectedMode switch
         {
@@ -175,14 +155,6 @@ namespace QuantTrader.ViewModels
             LoginMode.Separated => "使用券商账户进行交易，从第三方平台获取行情数据",
             _ => ""
         };
-
-        // 修复后的 CanLogin 属性
-        private bool _canLogin;
-        public bool CanLogin
-        {
-            get => _canLogin;
-            private set => SetProperty(ref _canLogin, value);
-        }
 
         public ObservableCollection<LoginModeInfo> AvailableLoginModes { get; }
             = new ObservableCollection<LoginModeInfo>();
@@ -192,6 +164,14 @@ namespace QuantTrader.ViewModels
 
         public ObservableCollection<MarketDataSourceInfo> AvailableMarketDataSources { get; }
             = new ObservableCollection<MarketDataSourceInfo>();
+
+        public bool CanLogin => !string.IsNullOrEmpty(SelectedBrokerType) &&
+                                !string.IsNullOrEmpty(BrokerServerAddress) &&
+                                !string.IsNullOrEmpty(BrokerUsername) &&
+                                !string.IsNullOrEmpty(BrokerPassword) &&
+                                (SelectedMode == LoginMode.BrokerDirect ||
+                                 (!string.IsNullOrEmpty(SelectedMarketDataSource) && IsMarketDataConfigValid())) &&
+                                !IsLogging;
 
         public ICommand LoginCommand { get; }
         public ICommand CancelCommand { get; }
@@ -212,81 +192,13 @@ namespace QuantTrader.ViewModels
             InitializeAvailableMarketDataSources();
 
             // 初始化命令
-            LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync, () => CanLogin);
-            CancelCommand = new RelayCommand(() => LoginCancelled?.Invoke());
+            LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync, ()=> CanLogin);
+            CancelCommand = new RelayCommand(()=> LoginCancelled?.Invoke());
             TestBrokerConnectionCommand = new AsyncRelayCommand(ExecuteTestBrokerConnectionAsync);
             TestMarketDataConnectionCommand = new AsyncRelayCommand(ExecuteTestMarketDataConnectionAsync);
 
             // 加载保存的设置
             LoadSavedSettings();
-
-            // 初始检查
-            RefreshCanLogin();
-        }
-
-        /// <summary>
-        /// 刷新登录按钮可用性
-        /// </summary>
-        private void RefreshCanLogin()
-        {
-            bool canLogin = false;
-
-            try
-            {
-                // 基本券商信息检查
-                bool brokerValid = !string.IsNullOrWhiteSpace(SelectedBrokerType) &&
-                                  !string.IsNullOrWhiteSpace(BrokerServerAddress) &&
-                                  !string.IsNullOrWhiteSpace(BrokerUsername) &&
-                                  !string.IsNullOrWhiteSpace(BrokerPassword);
-
-                if (!brokerValid)
-                {
-                    CanLogin = false;
-                    return;
-                }
-
-                // 检查行情数据源配置
-                bool marketDataValid = true;
-
-                if (SelectedMode == LoginMode.Separated)
-                {
-                    // 分离模式需要检查行情数据源配置
-                    if (string.IsNullOrWhiteSpace(SelectedMarketDataSource))
-                    {
-                        marketDataValid = false;
-                    }
-                    else
-                    {
-                        var dataSource = AvailableMarketDataSources.FirstOrDefault(ds => ds.Type == SelectedMarketDataSource);
-                        if (dataSource != null && dataSource.RequiresAuth)
-                        {
-                            if (dataSource.SupportsApiKey)
-                            {
-                                // 需要API Key
-                                marketDataValid = !string.IsNullOrWhiteSpace(MarketDataApiKey);
-                            }
-                            else
-                            {
-                                // 需要用户名密码
-                                marketDataValid = !string.IsNullOrWhiteSpace(MarketDataUsername) &&
-                                                 !string.IsNullOrWhiteSpace(MarketDataPassword);
-                            }
-                        }
-                        // 免费数据源不需要额外验证
-                    }
-                }
-
-                // 最终结果
-                canLogin = brokerValid && marketDataValid && !IsLogging;
-            }
-            catch (Exception ex)
-            {
-                // 防止异常影响UI
-                Console.WriteLine($"RefreshCanLogin error: {ex.Message}");
-                canLogin = false;
-            }
-
-            CanLogin = canLogin;
         }
 
         private void InitializeLoginModes()
@@ -341,16 +253,6 @@ namespace QuantTrader.ViewModels
                 SupportsMarketData = true
             });
 
-            AvailableBrokers.Add(new BrokerInfo
-            {
-                Type = "ths",
-                Name = "同花顺",
-                Description = "同花顺交易接口",
-                DefaultServerAddress = "https://api.10jqka.com.cn",
-                RequiresRealCredentials = true,
-                SupportsMarketData = false
-            });
-
             // 默认选择模拟券商
             SelectedBrokerType = "simulated";
         }
@@ -359,21 +261,21 @@ namespace QuantTrader.ViewModels
         {
             AvailableMarketDataSources.Add(new MarketDataSourceInfo
             {
+                Type = "simulated",
+                Name = "模拟券商",
+                Description = "用于测试的模拟券商",
+                DefaultServerAddress = "localhost:8888",
+                RequiresAuth = false,
+                SupportsApiKey = false
+            }); 
+            
+            AvailableMarketDataSources.Add(new MarketDataSourceInfo
+            {
                 Type = "sina",
                 Name = "新浪财经",
                 Description = "免费实时股票数据",
                 RequiresAuth = false,
                 DefaultServerAddress = "http://hq.sinajs.cn",
-                SupportsApiKey = false
-            });
-
-            AvailableMarketDataSources.Add(new MarketDataSourceInfo
-            {
-                Type = "eastmoney",
-                Name = "东方财富",
-                Description = "免费实时股票数据",
-                RequiresAuth = false,
-                DefaultServerAddress = "http://push2.eastmoney.com",
                 SupportsApiKey = false
             });
 
@@ -389,53 +291,29 @@ namespace QuantTrader.ViewModels
 
             AvailableMarketDataSources.Add(new MarketDataSourceInfo
             {
-                Type = "myquant",
-                Name = "MyQuant",
-                Description = "量化数据服务",
+                Type = "xtp",
+                Name = "XTP股票",
+                Description = "中泰证券XTP股票交易接口",
+                DefaultServerAddress = "tcp://120.27.164.138:6001",
                 RequiresAuth = true,
-                DefaultServerAddress = "https://api.myquant.cn",
                 SupportsApiKey = true
-            });
-
-            AvailableMarketDataSources.Add(new MarketDataSourceInfo
-            {
-                Type = "ricequant",
-                Name = "米筐科技",
-                Description = "RiceQuant量化平台",
-                RequiresAuth = true,
-                DefaultServerAddress = "https://www.ricequant.com",
-                SupportsApiKey = true
-            });
-
-            AvailableMarketDataSources.Add(new MarketDataSourceInfo
-            {
-                Type = "wind",
-                Name = "Wind万得",
-                Description = "专业金融数据服务",
-                RequiresAuth = true,
-                DefaultServerAddress = "https://www.wind.com.cn",
-                SupportsApiKey = false
             });
 
             // 默认选择新浪财经
-            SelectedMarketDataSource = "sina";
+            SelectedMarketDataSource = "simulated";
         }
 
         private void OnModeChanged()
         {
             if (SelectedMode == LoginMode.BrokerDirect)
             {
-                // 券商直连模式，清空行情数据源配置
-                SelectedMarketDataSource = null;
-                MarketDataServerAddress = "";
-                MarketDataUsername = "";
-                MarketDataPassword = "";
-                MarketDataApiKey = "";
+                // 券商直连模式，行情数据源与券商保持一致
+                SelectedMarketDataSource = "broker";
             }
             else
             {
                 // 分离模式，默认选择新浪财经
-                if (string.IsNullOrEmpty(SelectedMarketDataSource))
+                if (SelectedMarketDataSource == "broker")
                 {
                     SelectedMarketDataSource = "sina";
                 }
@@ -448,15 +326,6 @@ namespace QuantTrader.ViewModels
             if (broker != null)
             {
                 BrokerServerAddress = broker.DefaultServerAddress;
-
-                // 模拟券商提供默认用户名密码
-                if (broker.Type == "simulated")
-                {
-                    if (string.IsNullOrEmpty(BrokerUsername))
-                        BrokerUsername = "demo";
-                    if (string.IsNullOrEmpty(BrokerPassword))
-                        BrokerPassword = "123456";
-                }
             }
         }
 
@@ -467,6 +336,30 @@ namespace QuantTrader.ViewModels
             {
                 MarketDataServerAddress = dataSource.DefaultServerAddress;
             }
+        }
+
+        private bool IsMarketDataConfigValid()
+        {
+            if (SelectedMode == LoginMode.BrokerDirect)
+                return true;
+
+            if (string.IsNullOrEmpty(SelectedMarketDataSource))
+                return false;
+
+            var dataSource = AvailableMarketDataSources.FirstOrDefault(ds => ds.Type == SelectedMarketDataSource);
+            if (dataSource == null)
+                return false;
+
+            // 免费数据源不需要认证
+            if (!dataSource.RequiresAuth)
+                return true;
+
+            // 需要API Key的数据源
+            if (dataSource.SupportsApiKey)
+                return !string.IsNullOrEmpty(MarketDataApiKey);
+
+            // 需要用户名密码的数据源
+            return !string.IsNullOrEmpty(MarketDataUsername) && !string.IsNullOrEmpty(MarketDataPassword);
         }
 
         private void LoadSavedSettings()
@@ -582,11 +475,8 @@ namespace QuantTrader.ViewModels
                 {
                     // 券商直连模式，行情数据来自券商
                     StatusMessage = "正在获取券商行情权限...";
-                    if (brokerService is IMarketDataProvider brokerDataProvider)
-                    {
-                        marketDataService = brokerDataProvider.GetMarketDataService();
-                    }
-                    else
+                    marketDataService = brokerService.MarketDataService;
+                    if (brokerService.MarketDataService is null)
                     {
                         // 如果券商不支持行情数据，回退到免费数据源
                         marketDataService = _marketDataServiceFactory.CreateMarketDataService("sina");
@@ -604,6 +494,7 @@ namespace QuantTrader.ViewModels
                         await brokerService.DisconnectAsync();
                         return;
                     }
+                    brokerService.SetMarketDataService(marketDataService);
                 }
 
                 StatusMessage = "登录成功！";
@@ -676,52 +567,22 @@ namespace QuantTrader.ViewModels
 
         private bool ValidateInput()
         {
-            if (string.IsNullOrWhiteSpace(SelectedBrokerType))
+            if (string.IsNullOrEmpty(SelectedBrokerType))
             {
                 StatusMessage = "请选择券商类型";
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(BrokerUsername) || string.IsNullOrWhiteSpace(BrokerPassword))
+            if (string.IsNullOrEmpty(BrokerUsername) || string.IsNullOrEmpty(BrokerPassword))
             {
                 StatusMessage = "请输入券商用户名和密码";
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(BrokerServerAddress))
+            if (SelectedMode == LoginMode.Separated && !IsMarketDataConfigValid())
             {
-                StatusMessage = "请输入券商服务器地址";
+                StatusMessage = "请正确配置行情数据源";
                 return false;
-            }
-
-            if (SelectedMode == LoginMode.Separated)
-            {
-                if (string.IsNullOrWhiteSpace(SelectedMarketDataSource))
-                {
-                    StatusMessage = "请选择行情数据源";
-                    return false;
-                }
-
-                var dataSource = AvailableMarketDataSources.FirstOrDefault(ds => ds.Type == SelectedMarketDataSource);
-                if (dataSource != null && dataSource.RequiresAuth)
-                {
-                    if (dataSource.SupportsApiKey)
-                    {
-                        if (string.IsNullOrWhiteSpace(MarketDataApiKey))
-                        {
-                            StatusMessage = "请输入行情数据源API Key";
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        if (string.IsNullOrWhiteSpace(MarketDataUsername) || string.IsNullOrWhiteSpace(MarketDataPassword))
-                        {
-                            StatusMessage = "请输入行情数据源用户名和密码";
-                            return false;
-                        }
-                    }
-                }
             }
 
             return true;
@@ -732,15 +593,6 @@ namespace QuantTrader.ViewModels
             try
             {
                 StatusMessage = "正在测试券商连接...";
-
-                if (string.IsNullOrWhiteSpace(SelectedBrokerType) ||
-                    string.IsNullOrWhiteSpace(BrokerUsername) ||
-                    string.IsNullOrWhiteSpace(BrokerPassword) ||
-                    string.IsNullOrWhiteSpace(BrokerServerAddress))
-                {
-                    StatusMessage = "请先填写完整的券商信息";
-                    return;
-                }
 
                 var brokerService = _brokerServiceFactory.CreateBrokerService(SelectedBrokerType);
                 bool connected = await brokerService.ConnectAsync(BrokerUsername, BrokerPassword, BrokerServerAddress);
@@ -766,12 +618,6 @@ namespace QuantTrader.ViewModels
             try
             {
                 StatusMessage = "正在测试行情数据连接...";
-
-                if (string.IsNullOrWhiteSpace(SelectedMarketDataSource))
-                {
-                    StatusMessage = "请先选择行情数据源";
-                    return;
-                }
 
                 var marketDataService = await CreateMarketDataServiceAsync();
 

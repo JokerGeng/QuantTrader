@@ -25,11 +25,8 @@ namespace QuantTrader.MarketDatas
             {
                 "simulated" => new SimulatedMarketDataService(),
                 "sina" => new SinaMarketDataService(),
-                "eastmoney" => new EastmoneyMarketDataService(),
                 "jukuan" => new JukuanMarketDataService(),
-                "myquant" => new MyQuantMarketDataService(),
-                "ricequant" => new RiceQuantMarketDataService(),
-                "wind" => new WindMarketDataService(),
+                "xtp" => new XtpMarketDataService(),
                 "broker" => CreateBrokerMarketDataService(), // 券商行情数据
                 _ => throw new ArgumentException($"Unsupported data source: {dataSource}")
             };
@@ -49,7 +46,7 @@ namespace QuantTrader.MarketDatas
         /// </summary>
         public static string[] GetSupportedDataSources()
         {
-            return new[] { "simulated", "sina", "eastmoney" };
+            return new[] { "simulated", "broker", "jukuan"};
         }
 
         /// <summary>

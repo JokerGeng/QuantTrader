@@ -39,9 +39,15 @@ namespace QuantTrader.BrokerServices
         BrokerConnectionInfo ConnectionInfo { get; }
 
         /// <summary>
+        /// 使用第三方行情数据时配置
+        /// </summary>
+        /// <param name="marketDataService"></param>
+        void SetMarketDataService(IMarketDataService marketDataService);
+
+        /// <summary>
         /// 获取账户信息
         /// </summary>
-        Task<Account> GetAccountInfoAsync();
+        Account GetAccountInfo();
 
         /// <summary>
         /// 获取持仓

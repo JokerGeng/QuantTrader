@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using QuantTrader.MarketDatas;
+﻿using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 
 namespace QuantTrader.BrokerServices
 {
-    public class XtpBrokerService : IBrokerService, IMarketDataProvider
+    public class XtpBrokerService : IBrokerService
     {
         private bool _connected;
         private BrokerConnectionInfo _connectionInfo;
         private Account _account;
+        private IMarketDataService _marketDataService = new XtpMarketDataService();
 
         public event Action<Order> OrderStatusChanged;
         public event Action<Order> OrderExecuted;
@@ -22,7 +18,7 @@ namespace QuantTrader.BrokerServices
         public bool IsConnected => _connected;
         public BrokerConnectionInfo ConnectionInfo => _connectionInfo;
 
-        public IMarketDataService MarketDataService => throw new NotImplementedException();
+        public IMarketDataService MarketDataService => _marketDataService;
 
         public async Task<bool> ConnectAsync(string username, string password, string serverAddress)
         {
@@ -71,7 +67,7 @@ namespace QuantTrader.BrokerServices
             }
         }
 
-        public async Task<Account> GetAccountInfoAsync()
+        public Account GetAccountInfo()
         {
             if (!_connected)
                 throw new InvalidOperationException("未连接到XTP");
@@ -134,10 +130,9 @@ namespace QuantTrader.BrokerServices
             return new List<Order>();
         }
 
-        public IMarketDataService GetMarketDataService()
+        public void SetMarketDataService(IMarketDataService marketDataService)
         {
-            // XTP可以提供行情数据服务
-            return new XtpMarketDataService();
+            this._marketDataService = marketDataService;
         }
     }
 }

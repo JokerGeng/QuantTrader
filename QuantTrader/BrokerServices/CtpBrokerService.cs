@@ -13,7 +13,7 @@ namespace QuantTrader.BrokerServices
         private bool _connected;
         private BrokerConnectionInfo _connectionInfo;
         private Account _account;
-        private IMarketDataService _dataService = new SimulatedMarketDataService();
+        private IMarketDataService _marketDataService = new SimulatedMarketDataService();
 
         public event Action<Order> OrderStatusChanged;
         public event Action<Order> OrderExecuted;
@@ -23,12 +23,7 @@ namespace QuantTrader.BrokerServices
         public bool IsConnected => _connected;
         public BrokerConnectionInfo ConnectionInfo => _connectionInfo;
 
-        public IMarketDataService MarketDataService => _dataService;
-
-        public CtpBrokerService(string user, string password)
-        {
-            
-        }
+        public IMarketDataService MarketDataService => _marketDataService;
 
         public async Task<bool> ConnectAsync(string username, string password, string serverAddress)
         {
@@ -89,7 +84,7 @@ namespace QuantTrader.BrokerServices
             await Task.CompletedTask;
         }
 
-        public async Task<Account> GetAccountInfoAsync()
+        public Account GetAccountInfo()
         {
             if (!_connected)
                 throw new InvalidOperationException("Not connected to CTP.");
@@ -177,6 +172,11 @@ namespace QuantTrader.BrokerServices
             // var orders = await _ctpApi.QueryOrdersAsync(symbol, status);
 
             return new List<Order>();
+        }
+
+        public void SetMarketDataService(IMarketDataService marketDataService)
+        {
+            this._marketDataService = marketDataService;
         }
     }
 }

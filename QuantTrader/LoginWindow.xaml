@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:QuantTrader.ViewModels"
         xmlns:cvt="clr-namespace:QuantTrader.Converts"
         mc:Ignorable="d"
-        Title="QuantTrader - Login" Height="650" Width="500"
+        Title="QuantTrader - Login" Height="750" Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         d:DataContext="{d:DesignInstance vm:LoginViewModel}">
@@ -125,7 +125,7 @@
                         <!-- 密码 -->
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="密码:" FontWeight="Bold"/>
                         <PasswordBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" 
-                                     x:Name="BrokerPasswordBox" 
+                                     x:Name="BrokerPasswordBox"
                                      PasswordChanged="BrokerPasswordBox_PasswordChanged"/>
                     </Grid>
                 </GroupBox>

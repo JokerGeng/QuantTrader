@@ -37,17 +37,6 @@ namespace QuantTrader
             // 订阅事件
             _viewModel.LoginSuccessful += OnLoginSuccessful;
             _viewModel.LoginCancelled += OnLoginCancelled;
-
-            // 设置密码框初始值
-            if (!string.IsNullOrEmpty(_viewModel.BrokerPassword))
-            {
-                BrokerPasswordBox.Password = _viewModel.BrokerPassword;
-            }
-
-            if (!string.IsNullOrEmpty(_viewModel.MarketDataPassword))
-            {
-                MarketDataPasswordBox.Password = _viewModel.MarketDataPassword;
-            }
         }
 
         private void OnLoginSuccessful(IBrokerService brokerService, IMarketDataService marketDataService)
