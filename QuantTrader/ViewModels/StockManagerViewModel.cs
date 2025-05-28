@@ -8,7 +8,7 @@ using QuantTrader.Commands;
 using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 using QuantTrader.Strategies;
-using QuantTrader.TradingEngine;
+using QuantTrader.TradingEngines;
 using System.Windows.Input;
 
 namespace QuantTrader.ViewModels

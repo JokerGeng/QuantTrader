@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using QuantTrader.Commands;
 using QuantTrader.Strategies;
-using QuantTrader.TradingEngine;
+using QuantTrader.TradingEngines;
 using System.Windows.Input;
 
 namespace QuantTrader.ViewModels

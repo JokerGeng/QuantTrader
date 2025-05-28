@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using QuantTrader.Models;
 using QuantTrader.Strategies;
 
-namespace QuantTrader.TradingEngine
+namespace QuantTrader.TradingEngines
 {
     public interface ITradingEngine
     {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OxyPlot.Series;
 using QuantTrader.BrokerServices;
 using QuantTrader.MarketDatas;
-using QuantTrader.TradingEngine;
+using QuantTrader.TradingEngines;
 using QuantTrader.ViewModels;
 
 namespace QuantTrader
@@ -16,6 +16,7 @@ namespace QuantTrader
     {
         private IServiceProvider _serviceProvider;
         private IBrokerService _brokerService;
+        private IMarketDataService _marketDataService;
 
         // 公开ServiceProvider供视图使用
         public IServiceProvider ServiceProvider => _serviceProvider;
@@ -38,7 +39,6 @@ namespace QuantTrader
                     "Data");
                 services.AddSingleton<BrokerServiceFactory>();
                 services.AddSingleton<MarketDataServiceFactory>();
-                services.AddSingleton<IMarketDataService, SimulatedMarketDataService>();
                 services.AddSingleton<IDataRepository>(provider => new CsvDataRepository(dataPath));
                 //注册模型模型
                 services.AddSingleton<LoginViewModel>();
@@ -53,8 +53,9 @@ namespace QuantTrader
                 {
                     // 登录成功，注册券商服务实例
                     _brokerService = loginWindow.BrokerService;
+                    _marketDataService = loginWindow.MarketDataService;
                     //配置服务，包含券商服务
-                    ConfigureServicesWithBroker(services, _brokerService);
+                    ConfigureServicesWithBroker(services, _brokerService, _marketDataService);
                     flag = true;
                 }
             }
@@ -81,13 +82,14 @@ namespace QuantTrader
             }
         }
 
-        private void ConfigureServicesWithBroker(IServiceCollection services, IBrokerService brokerService)
+        private void ConfigureServicesWithBroker(IServiceCollection services, IBrokerService brokerService,IMarketDataService marketDataService)
         {
             // 注册已登录的券商服务实例
             services.AddSingleton<IBrokerService>(brokerService);
+            services.AddSingleton<IMarketDataService>(marketDataService);
 
             // 注册交易引擎
-            services.AddSingleton<ITradingEngine, TradingEngine.TradingEngine>();
+            services.AddSingleton<ITradingEngine, TradingEngine>();
 
             // 注册视图模型
             services.AddSingleton<MainViewModel>();

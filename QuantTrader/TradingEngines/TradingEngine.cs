@@ -8,7 +8,7 @@ using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 using QuantTrader.Strategies;
 
-namespace QuantTrader.TradingEngine
+namespace QuantTrader.TradingEngines
 {
     public class TradingEngine : ITradingEngine
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using QuantTrader.Commands;
 using QuantTrader.Models;
 using QuantTrader.Strategies;
-using QuantTrader.TradingEngine;
+using QuantTrader.TradingEngines;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using QuantTrader.BrokerServices;
@@ -91,7 +91,7 @@ namespace QuantTrader.ViewModels
             _serviceProvider = serviceProvider;
             _tradingEngine = tradingEngine;
 
-            if (_tradingEngine is TradingEngine.TradingEngine engine &&
+            if (_tradingEngine is TradingEngine engine &&
       engine.BrokerService != null)
             {
                 var brokerService = engine.BrokerService;
@@ -476,7 +476,7 @@ namespace QuantTrader.ViewModels
             {
                 IsBrokerConnected = isConnected;
 
-                if (isConnected && _tradingEngine is TradingEngine.TradingEngine engine)
+                if (isConnected && _tradingEngine is TradingEngine engine)
                 {
                     BrokerConnectionInfo = engine.BrokerService.ConnectionInfo?.ToString() ?? "Connected";
                     StatusMessage = "Broker connected successfully.";
