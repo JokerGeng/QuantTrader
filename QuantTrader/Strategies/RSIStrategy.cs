@@ -19,27 +19,12 @@ namespace QuantTrader.Strategies
         private readonly Dictionary<string, List<Candlestick>> _candlesticksCache = new Dictionary<string, List<Candlestick>>();
         private readonly Dictionary<string, Level1Data> _latestPrices = new Dictionary<string, Level1Data>();
 
-        public RSIStrategy(
-            string id,
+        public RSIStrategy(IStrategyInfo strategyInfo,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
-            : base(id, brokerService, marketDataService, dataRepository)
+            : base(strategyInfo, brokerService, marketDataService, dataRepository)
         {
-            Name = "RSI Strategy";
-            Description = "Buy when RSI is below oversold level, sell when RSI is above overbought level";
-
-            // 设置默认参数
-            Parameters = new Dictionary<string, object>
-            {
-                { "Symbol", "AAPL" },
-                { "RSIPeriod", 14 },
-                { "OversoldLevel", 30 },
-                { "OverboughtLevel", 70 },
-                { "Quantity", 100 },
-                { "CandlestickPeriod", TimeSpan.FromMinutes(5) },
-                { "MaxPositionValue", 100000m }
-            };
         }
 
         public override async Task StartAsync()
@@ -51,15 +36,14 @@ namespace QuantTrader.Strategies
             _cancellationTokenSource = new CancellationTokenSource();
 
             // 获取参数
-            var symbol = Parameters["Symbol"] as string;
-            var rsiPeriod = Convert.ToInt32(Parameters["RSIPeriod"]);
-            var period = (TimeSpan)Parameters["CandlestickPeriod"];
+            var rsiPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "RSIPeriod").Value);
+            var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
 
             // 获取初始K线数据
-            await RefreshCandlesticksAsync(symbol, Math.Max(rsiPeriod * 3, 50), period);
+            await RefreshCandlesticksAsync(Symbol, Math.Max(rsiPeriod * 3, 50), period);
 
             // 订阅行情数据
-            _marketDataService.SubscribeLevel1Data(symbol, OnLevel1DataReceived);
+            _marketDataService.SubscribeLevel1Data(Symbol, OnLevel1DataReceived);
 
             // 启动策略循环
             Task.Run(() => RunStrategyLoopAsync(_cancellationTokenSource.Token));
@@ -81,18 +65,18 @@ namespace QuantTrader.Strategies
 
         private async Task RunStrategyLoopAsync(CancellationToken cancellationToken)
         {
-            var symbol = Parameters["Symbol"] as string;
-
             while (!cancellationToken.IsCancellationRequested && Status == StrategyStatus.Running)
             {
                 try
                 {
                     // 检查是否需要更新K线数据
-                    var rsiPeriod = Convert.ToInt32(Parameters["RSIPeriod"]);
-                    await RefreshCandlesticksAsync(symbol, Math.Max(rsiPeriod * 3, 50), (TimeSpan)Parameters["CandlestickPeriod"]);
+                    var rsiPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "RSIPeriod").Value);
+                    var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
+
+                    await RefreshCandlesticksAsync(Symbol, Math.Max(rsiPeriod * 3, 50), period);
 
                     // 生成交易信号
-                    await GenerateSignalsAsync(symbol);
+                    await GenerateSignalsAsync(Symbol);
 
                     // 等待下一个周期
                     await Task.Delay(1000, cancellationToken);
@@ -139,11 +123,11 @@ namespace QuantTrader.Strategies
                 return;
 
             // 获取参数
-            var rsiPeriod = Convert.ToInt32(Parameters["RSIPeriod"]);
-            var oversoldLevel = Convert.ToInt32(Parameters["OversoldLevel"]);
-            var overboughtLevel = Convert.ToInt32(Parameters["OverboughtLevel"]);
-            var quantity = Convert.ToInt32(Parameters["Quantity"]);
-            var maxPositionValue = Convert.ToDecimal(Parameters["MaxPositionValue"]);
+            var rsiPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "RSIPeriod").Value);
+            var oversoldLevel = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "OversoldLevel").Value);
+            var overboughtLevel = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "OverboughtLevel").Value);
+            var quantity = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Quantity").Value);
+            var maxPositionValue = Convert.ToDecimal(StrategyInfo.Parameters.Find(t => t.Name == "MaxPositionValue").Value);
 
             // 确保有足够的数据
             if (candles.Count < rsiPeriod * 2)

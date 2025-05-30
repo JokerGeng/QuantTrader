@@ -78,7 +78,7 @@ namespace QuantTrader.Views
 
         public void SetStrategy(ScriptStrategy strategy)
         {
-            _viewModel.InitializeFromStrategy(strategy);
+            //_viewModel.InitializeFromStrategy(strategy);
             ScriptEditor.Text = strategy.ScriptCode;
         }
     }

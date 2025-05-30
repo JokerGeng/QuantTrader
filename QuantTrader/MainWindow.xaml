@@ -65,12 +65,12 @@
         <!-- 工具栏 -->
         <ToolBar Grid.Row="0">
             <Button Command="{Binding StartEngineCommand}" Content="Start Engine"/>
-            <Button Command="{Binding StopEngineCommand}" Content="Stop Engine" IsEnabled="{Binding IsEngineRunning}"/>
+            <Button Command="{Binding StopEngineCommand}" Content="Stop Engine"/>
             <Separator/>
             <Button Command="{Binding ConfigureStrategyCommand}" Content="Configure Strategy"/>
             <Button Command="{Binding CreateCustomStrategyCommand}"  Content="Custom Strategy"/>
-            <Button Command="{Binding OpenStockManagerCommand}" Content="股票管理" IsEnabled="{Binding IsEngineRunning}"
-                    Style="{StaticResource PrimaryButton}"/>
+            <Separator/>
+            <Button Command="{Binding OpenStockManagerCommand}" Content="股票管理" Style="{StaticResource PrimaryButton}"/>
         </ToolBar>
 
         <!-- 账户信息面板 -->
@@ -110,19 +110,6 @@
 
         <!-- 主内容区 -->
         <TabControl Grid.Row="2" Margin="5">
-            <!-- 策略标签页 -->
-            <TabItem Header="Strategies">
-                <DataGrid ItemsSource="{Binding Strategies}" 
-                         SelectedItem="{Binding SelectedStrategy}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto"/>
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="2*"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
-
             <!-- 持仓标签页 -->
             <TabItem Header="Positions">
                 <DataGrid ItemsSource="{Binding Positions}">
@@ -165,6 +152,19 @@
                         <DataGridTextColumn Header="Fill %" Binding="{Binding FillPercentage}" Width="Auto"/>
                         <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
                         <DataGridTextColumn Header="Created" Binding="{Binding CreateTime, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            
+            <!-- 策略标签页 -->
+            <TabItem Header="Strategies">
+                <DataGrid ItemsSource="{Binding Strategies}" 
+                         SelectedItem="{Binding SelectedStrategy}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="2*"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>

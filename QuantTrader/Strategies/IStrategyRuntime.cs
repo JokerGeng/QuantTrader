@@ -4,6 +4,8 @@ namespace QuantTrader.Strategies
 {
     public interface IStrategyRuntime
     {
+        IStrategyInfo StrategyInfo { get; }
+
         /// <summary>
         /// 运行策略的股票
         /// </summary>
@@ -28,11 +30,6 @@ namespace QuantTrader.Strategies
         /// 停止策略
         /// </summary>
         Task StopAsync();
-
-        /// <summary>
-        /// 更新策略参数
-        /// </summary>
-        Task UpdateParametersAsync(Dictionary<string, object> parameters);
 
         /// <summary>
         /// 订单执行事件

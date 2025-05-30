@@ -93,38 +93,40 @@ namespace QuantTrader.TradingEngines
             // 生成唯一策略ID
             string strategyId = $"{strategyType}_{Guid.NewGuid():N}";
 
-            // 创建策略实例
-            IStrategy strategy = strategyType.ToLower() switch
-            {
-                "movingaveragecross" => new MovingAverageCrossStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
-                "rsi" => new RSIStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
-                "bollingerbands" => new BollingerBandsStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
-                "macd" => new MACDStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
-                "script" => new ScriptStrategy(strategyId, _brokerService, _marketDataService, _dataRepository), // 添加脚本策略
-                _ => throw new ArgumentException($"Unsupported strategy type: {strategyType}")
-            };
+            //// 创建策略实例
+            //IStrategy strategy = strategyType.ToLower() switch
+            //{
+            //    "movingaveragecross" => new MovingAverageCrossStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+            //    "rsi" => new RSIStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+            //    "bollingerbands" => new BollingerBandsStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+            //    "macd" => new MACDStrategy(strategyId, _brokerService, _marketDataService, _dataRepository),
+            //    "script" => new ScriptStrategy(strategyId, _brokerService, _marketDataService, _dataRepository), // 添加脚本策略
+            //    _ => throw new ArgumentException($"Unsupported strategy type: {strategyType}")
+            //};
 
-            // 订阅策略事件
-            strategy.SignalGenerated += OnStrategySignalGenerated;
-            strategy.OrderExecuted += OnStrategyOrderExecuted;
-            strategy.LogGenerated += OnStrategyLogGenerated;
+            //// 订阅策略事件
+            //strategy.SignalGenerated += OnStrategySignalGenerated;
+            //strategy.OrderExecuted += OnStrategyOrderExecuted;
+            //strategy.LogGenerated += OnStrategyLogGenerated;
 
-            // 初始化策略
-            await strategy.InitializeAsync();
+            //// 初始化策略
+            //await strategy.InitializeAsync();
 
-            // 设置策略参数
-            if (parameters != null)
-            {
-                await strategy.UpdateParametersAsync(parameters);
-            }
+            //// 设置策略参数
+            //if (parameters != null)
+            //{
+            //    await strategy.UpdateParametersAsync(parameters);
+            //}
 
-            // 添加到策略列表
-            _strategies.Add(strategy);
+            //// 添加到策略列表
+            //_strategies.Add(strategy);
 
-            // 记录日志
-            await _dataRepository.LogStrategyExecutionAsync("Engine", $"Strategy added: {strategy.Name} ({strategyId})", DateTime.Now);
+            //// 记录日志
+            //await _dataRepository.LogStrategyExecutionAsync("Engine", $"Strategy added: {strategy.Name} ({strategyId})", DateTime.Now);
 
-            return strategy;
+            //return strategy;
+
+            return default;
         }
         public async Task RemoveStrategyAsync(string strategyId)
         {

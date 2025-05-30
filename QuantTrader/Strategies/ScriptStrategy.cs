@@ -33,27 +33,12 @@ namespace QuantTrader.Strategies
             }
         }
 
-        public ScriptStrategy(
-            string id,
+        public ScriptStrategy(IStrategyInfo strategyInfo,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
-            : base(id, brokerService, marketDataService, dataRepository)
+            : base(strategyInfo, brokerService, marketDataService, dataRepository)
         {
-            Name = "Custom Script Strategy";
-            Description = "User-defined trading strategy using C# script";
-
-            // 设置默认参数
-            Parameters = new Dictionary<string, object>
-            {
-                { "Symbol", "AAPL" },
-                { "CandlestickPeriod", TimeSpan.FromMinutes(5) },
-                { "LookbackPeriod", 50 },
-                { "Quantity", 100 },
-                { "MaxPositionValue", 100000m }
-            };
-
-            // 设置默认脚本
             ScriptCode = GetDefaultScript();
         }
 
@@ -83,15 +68,14 @@ namespace QuantTrader.Strategies
             _cancellationTokenSource = new CancellationTokenSource();
 
             // 获取参数
-            var symbol = Parameters["Symbol"] as string;
-            var period = (TimeSpan)Parameters["CandlestickPeriod"];
-            var lookbackPeriod = Convert.ToInt32(Parameters["LookbackPeriod"]);
+            var lookbackPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "LookbackPeriod").Value);
+            var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
 
             // 获取初始K线数据
-            await RefreshCandlesticksAsync(symbol, lookbackPeriod, period);
+            await RefreshCandlesticksAsync(Symbol, lookbackPeriod, period);
 
             // 订阅行情数据
-            _marketDataService.SubscribeLevel1Data(symbol, OnLevel1DataReceived);
+            _marketDataService.SubscribeLevel1Data(Symbol, OnLevel1DataReceived);
 
             // 启动策略循环
             Task.Run(() => RunStrategyLoopAsync(_cancellationTokenSource.Token));
@@ -141,18 +125,17 @@ namespace QuantTrader.Strategies
 
         private async Task RunStrategyLoopAsync(CancellationToken cancellationToken)
         {
-            var symbol = Parameters["Symbol"] as string;
-
             while (!cancellationToken.IsCancellationRequested && Status == StrategyStatus.Running)
             {
                 try
                 {
+                    var lookbackPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "LookbackPeriod").Value);
+                    var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
                     // 检查是否需要更新K线数据
-                    var lookbackPeriod = Convert.ToInt32(Parameters["LookbackPeriod"]);
-                    await RefreshCandlesticksAsync(symbol, lookbackPeriod, (TimeSpan)Parameters["CandlestickPeriod"]);
+                    await RefreshCandlesticksAsync(Symbol, lookbackPeriod, period);
 
                     // 生成交易信号
-                    await GenerateSignalsAsync(symbol);
+                    await GenerateSignalsAsync(Symbol);
 
                     // 等待下一个周期
                     await Task.Delay(1000, cancellationToken);
@@ -208,7 +191,7 @@ namespace QuantTrader.Strategies
                 {
                     Candles = candles,
                     Symbol = symbol,
-                    Parameters = Parameters,
+                    Parameters = StrategyInfo.Parameters,
                     Position = Positions.TryGetValue(symbol, out var position) ? position : new Position(symbol),
                     CurrentSignal = null,
                     Logger = message => Log(message)
@@ -235,7 +218,8 @@ namespace QuantTrader.Strategies
                     // 默认数量
                     if (signal.Quantity == 0)
                     {
-                        signal.Quantity = Convert.ToInt32(Parameters["Quantity"]);
+                        var quantity = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Quantity").Value);
+                        signal.Quantity = quantity;
                     }
 
                     // 生成信号
@@ -317,7 +301,7 @@ return CurrentSignal;
         // 数据
         public List<Candlestick> Candles { get; set; }
         public string Symbol { get; set; }
-        public Dictionary<string, object> Parameters { get; set; }
+        public List<StrategyParameter> Parameters { get; set; }
         public Position Position { get; set; }
 
         // 输出

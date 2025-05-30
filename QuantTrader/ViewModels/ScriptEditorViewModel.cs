@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Windows.Input;
 using QuantTrader.Commands;
+using QuantTrader.Models;
 using QuantTrader.Strategies;
 using QuantTrader.TradingEngines;
-using System.Windows.Input;
 
 namespace QuantTrader.ViewModels
 {
@@ -78,7 +74,7 @@ namespace QuantTrader.ViewModels
             set => SetProperty(ref _isNewScript, value);
         }
 
-        public Dictionary<string, object> Parameters { get; private set; } = new Dictionary<string, object>();
+        public List<StrategyParameter> Parameters { get; private set; } = new List<StrategyParameter>();
         public List<string> Templates { get; } = new List<string> { "移动平均线交叉", "RSI超买超卖", "布林带策略", "MACD策略", "空白策略" };
 
         public ICommand ValidateCommand { get; }
@@ -101,36 +97,6 @@ namespace QuantTrader.ViewModels
             ValidateCommand = new AsyncRelayCommand(ExecuteValidateAsync);
             SaveCommand = new AsyncRelayCommand(ExecuteSaveAsync);
             CancelCommand = new RelayCommand(() => EditorCancelled?.Invoke());
-
-            // 初始化默认参数
-            InitializeDefaultParameters();
-        }
-
-        public void InitializeFromStrategy(ScriptStrategy strategy)
-        {
-            if (strategy == null)
-                return;
-
-            _scriptStrategy = strategy;
-            IsNewScript = false;
-            ScriptName = strategy.Name;
-            ScriptCode = strategy.ScriptCode;
-
-            // 复制参数
-            Parameters.Clear();
-            foreach (var param in strategy.Parameters)
-            {
-                Parameters[param.Key] = param.Value;
-            }
-        }
-
-        private void InitializeDefaultParameters()
-        {
-            Parameters["Symbol"] = "AAPL";
-            Parameters["CandlestickPeriod"] = TimeSpan.FromMinutes(5);
-            Parameters["LookbackPeriod"] = 50;
-            Parameters["Quantity"] = 100;
-            Parameters["MaxPositionValue"] = 100000m;
         }
 
         private void LoadTemplate(string templateName)
@@ -172,11 +138,8 @@ namespace QuantTrader.ViewModels
                 ScriptOutput = "Validating script...";
 
                 // 创建临时策略用于验证
-                var tempStrategy = new ScriptStrategy(
-                    "Temp_" + Guid.NewGuid().ToString("N"),
-                    null,  // 这些依赖项在验证时不需要
-                    null,
-                    null);
+                // 这些依赖项在验证时不需要
+                var tempStrategy = new ScriptStrategy(null, null, null, null);
 
                 tempStrategy.ScriptCode = ScriptCode;
 
@@ -217,11 +180,11 @@ namespace QuantTrader.ViewModels
                 // 如果是编辑现有策略
                 if (!IsNewScript && _scriptStrategy != null)
                 {
-                    _scriptStrategy.Name = ScriptName;
+                    //_scriptStrategy.Name = ScriptName;
                     _scriptStrategy.ScriptCode = ScriptCode;
 
                     // 更新参数
-                    await _tradingEngine.UpdateStrategyParametersAsync(_scriptStrategy.Id, Parameters);
+                    //await _tradingEngine.UpdateStrategyParametersAsync(_scriptStrategy.Id, Parameters);
 
                     ScriptSaved?.Invoke(_scriptStrategy);
                 }
@@ -231,19 +194,19 @@ namespace QuantTrader.ViewModels
                     var strategyId = $"Script_{Guid.NewGuid():N}";
 
                     // 添加策略
-                    var strategy = await _tradingEngine.AddStrategyAsync("script", Parameters) as ScriptStrategy;
+                    //var strategy = await _tradingEngine.AddStrategyAsync("script", Parameters) as ScriptStrategy;
 
-                    if (strategy != null)
-                    {
-                        strategy.Name = ScriptName;
-                        strategy.ScriptCode = ScriptCode;
+                    //if (strategy != null)
+                    //{
+                    //    //strategy.Name = ScriptName;
+                    //    strategy.ScriptCode = ScriptCode;
 
-                        ScriptSaved?.Invoke(strategy);
-                    }
-                    else
-                    {
-                        throw new Exception("Failed to create script strategy");
-                    }
+                    //    ScriptSaved?.Invoke(strategy);
+                    //}
+                    //else
+                    //{
+                    //    throw new Exception("Failed to create script strategy");
+                    //}
                 }
             }
             catch (Exception ex)

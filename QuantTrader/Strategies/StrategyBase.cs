@@ -10,17 +10,15 @@ using QuantTrader.Models;
 
 namespace QuantTrader.Strategies
 {
-    public abstract class StrategyBase : IStrategy
+    public abstract class StrategyBase : IStrategyRuntime
     {
         protected readonly IBrokerService _brokerService;
         protected readonly IMarketDataService _marketDataService;
         protected readonly IDataRepository _dataRepository;
 
-        public string Id { get; }
-        public string Name { get;  set; }
+        public IStrategyInfo StrategyInfo { get; }
         public string Symbol { get;  set; }
-        public string Description { get; protected set; }
-        public Dictionary<string, object> Parameters { get; protected set; }
+
         public StrategyStatus Status { get; protected set; }
 
         public event Action<string, Order> OrderExecuted;
@@ -31,12 +29,12 @@ namespace QuantTrader.Strategies
         protected Dictionary<string, Order> ActiveOrders { get; } = new Dictionary<string, Order>();
 
         protected StrategyBase(
-            string id,
+            IStrategyInfo strategyInfo,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
         {
-            Id = id;
+            StrategyInfo = strategyInfo;
             _brokerService = brokerService;
             _marketDataService = marketDataService;
             _dataRepository = dataRepository;
@@ -59,7 +57,7 @@ namespace QuantTrader.Strategies
 
             foreach (var order in orders)
             {
-                if (order.StrategyId == Id)
+                if (order.StrategyId == StrategyInfo.Id)
                 {
                     ActiveOrders[order.OrderId] = order;
                 }
@@ -105,21 +103,9 @@ namespace QuantTrader.Strategies
             Log("Strategy stopped");
         }
 
-        public virtual async Task UpdateParametersAsync(Dictionary<string, object> parameters)
-        {
-            //foreach (var param in parameters)
-            //{
-            //    Parameters[param.Key] = param.Value;
-            //}
-
-            Log($"Parameters updated: {string.Join(", ", parameters.Select(p => $"{p.Key}={p.Value}"))}");
-
-            await Task.CompletedTask;
-        }
-
         protected virtual void OnOrderStatusChanged(Order order)
         {
-            if (order.StrategyId != Id)
+            if (order.StrategyId != StrategyInfo.Id)
                 return;
 
             if (order.IsActive)
@@ -136,12 +122,12 @@ namespace QuantTrader.Strategies
 
         protected virtual void OnOrderExecuted(Order order)
         {
-            if (order.StrategyId != Id)
+            if (order.StrategyId != StrategyInfo.Id)
                 return;
 
             Log($"Order executed: {order}");
 
-            OrderExecuted?.Invoke(Id, order);
+            OrderExecuted?.Invoke(StrategyInfo.Id, order);
         }
 
         protected async Task<Order> PlaceOrderAsync(Signal signal)
@@ -155,7 +141,7 @@ namespace QuantTrader.Strategies
                     OrderType.Limit,
                     signal.Price,
                     signal.Quantity,
-                    Id);
+                    StrategyInfo.Id);
 
                 Log($"Order placed: {order}");
                 return order;
@@ -171,7 +157,7 @@ namespace QuantTrader.Strategies
         {
             Log($"Signal generated: {signal}");
 
-            SignalGenerated?.Invoke(Id, signal);
+            SignalGenerated?.Invoke(StrategyInfo.Id, signal);
         }
 
         protected void Log(string message)
@@ -179,10 +165,10 @@ namespace QuantTrader.Strategies
             var timestamp = DateTime.Now;
 
             // 记录到数据库
-            _dataRepository.LogStrategyExecutionAsync(Id, message, timestamp).ConfigureAwait(false);
+            _dataRepository.LogStrategyExecutionAsync(StrategyInfo.Id, message, timestamp).ConfigureAwait(false);
 
             // 触发日志事件
-            LogGenerated?.Invoke(Id, message);
+            LogGenerated?.Invoke(StrategyInfo.Id, message);
         }
     }
 }

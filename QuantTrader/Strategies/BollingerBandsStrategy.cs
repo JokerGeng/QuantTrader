@@ -18,26 +18,12 @@ namespace QuantTrader.Strategies
         private readonly Dictionary<string, Level1Data> _latestPrices = new Dictionary<string, Level1Data>();
 
         public BollingerBandsStrategy(
-            string id,
+            IStrategyInfo strategyInfo,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
-            : base(id, brokerService, marketDataService, dataRepository)
+            : base(strategyInfo, brokerService, marketDataService, dataRepository)
         {
-            Name = "Bollinger Bands Strategy";
-            Description = "Buy when price touches the lower band, sell when price touches the upper band";
-
-            // 设置默认参数
-            Parameters = new Dictionary<string, object>
-            {
-                { "Symbol", "AAPL" },
-                { "Period", 20 },
-                { "Multiplier", 2.0m },
-                { "Quantity", 100 },
-                { "CandlestickPeriod", TimeSpan.FromMinutes(5) },
-                { "MaxPositionValue", 100000m },
-                { "ExitMiddleBand", true } // 是否在价格回归到中轨时平仓
-            };
         }
 
         public override async Task StartAsync()
@@ -49,15 +35,13 @@ namespace QuantTrader.Strategies
             _cancellationTokenSource = new CancellationTokenSource();
 
             // 获取参数
-            var symbol = Parameters["Symbol"] as string;
-            var period = Convert.ToInt32(Parameters["Period"]);
-            var candlePeriod = (TimeSpan)Parameters["CandlestickPeriod"];
-
+            var period = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Period").Value);
+            var candlePeriod = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
             // 获取初始K线数据
-            await RefreshCandlesticksAsync(symbol, Math.Max(period + 10, 50), candlePeriod);
+            await RefreshCandlesticksAsync(Symbol, Math.Max(period + 10, 50), candlePeriod);
 
             // 订阅行情数据
-            _marketDataService.SubscribeLevel1Data(symbol, OnLevel1DataReceived);
+            _marketDataService.SubscribeLevel1Data(Symbol, OnLevel1DataReceived);
 
             // 启动策略循环
             Task.Run(() => RunStrategyLoopAsync(_cancellationTokenSource.Token));
@@ -79,18 +63,17 @@ namespace QuantTrader.Strategies
 
         private async Task RunStrategyLoopAsync(CancellationToken cancellationToken)
         {
-            var symbol = Parameters["Symbol"] as string;
-
             while (!cancellationToken.IsCancellationRequested && Status == StrategyStatus.Running)
             {
                 try
                 {
                     // 检查是否需要更新K线数据
-                    var period = Convert.ToInt32(Parameters["Period"]);
-                    await RefreshCandlesticksAsync(symbol, Math.Max(period + 10, 50), (TimeSpan)Parameters["CandlestickPeriod"]);
+                    var period = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Period").Value);
+                    var candlePeriod = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
+                    await RefreshCandlesticksAsync(Symbol, Math.Max(period + 10, 50), candlePeriod);
 
                     // 生成交易信号
-                    await GenerateSignalsAsync(symbol);
+                    await GenerateSignalsAsync(Symbol);
 
                     // 等待下一个周期
                     await Task.Delay(1000, cancellationToken);
@@ -137,11 +120,11 @@ namespace QuantTrader.Strategies
                 return;
 
             // 获取参数
-            var period = Convert.ToInt32(Parameters["Period"]);
-            var multiplier = Convert.ToDecimal(Parameters["Multiplier"]);
-            var quantity = Convert.ToInt32(Parameters["Quantity"]);
-            var maxPositionValue = Convert.ToDecimal(Parameters["MaxPositionValue"]);
-            var exitMiddleBand = Convert.ToBoolean(Parameters["ExitMiddleBand"]);
+            var period = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Period").Value);
+            var multiplier = Convert.ToDecimal(StrategyInfo.Parameters.Find(t => t.Name == "Multiplier").Value);
+            var quantity = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Quantity").Value);
+            var maxPositionValue = Convert.ToDecimal(StrategyInfo.Parameters.Find(t => t.Name == "MaxPositionValue").Value);
+            var exitMiddleBand = Convert.ToBoolean(StrategyInfo.Parameters.Find(t => t.Name == "ExitMiddleBand").Value);
 
             // 确保有足够的数据
             if (candles.Count <= period)

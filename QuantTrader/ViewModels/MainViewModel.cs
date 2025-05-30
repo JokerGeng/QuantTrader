@@ -96,15 +96,10 @@ namespace QuantTrader.ViewModels
             // 初始化命令
             StartEngineCommand = new AsyncRelayCommand(ExecuteStartEngineAsync, () => !IsEngineRunning);
             StopEngineCommand = new AsyncRelayCommand(ExecuteStopEngineAsync, () => IsEngineRunning);
-            //AddStrategyCommand = new AsyncRelayCommand(ExecuteAddStrategyAsync, () => IsEngineRunning);
-            //RemoveStrategyCommand = new AsyncRelayCommand(ExecuteRemoveStrategyAsync, () => SelectedStrategy != null);
-            //StartStrategyCommand = new AsyncRelayCommand(ExecuteStartStrategyAsync, () => SelectedStrategy != null && SelectedStrategy.Status != StrategyStatus.Running);
-            //StopStrategyCommand = new AsyncRelayCommand(ExecuteStopStrategyAsync, () => SelectedStrategy != null && SelectedStrategy.Status == StrategyStatus.Running);
-            ConfigureStrategyCommand = new AsyncRelayCommand(ExecuteConfigureStrategyAsync);
-            ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, () => !IsBrokerConnected);
-            CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy, () => IsEngineRunning);
+            ConfigureStrategyCommand = new RelayCommand(ExecuteConfigureStrategy);
+            CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy);
             OpenStockManagerCommand = new RelayCommand(ExecuteOpenStockManager, () => IsEngineRunning);
-            //OpenStrategyManagerCommand = new RelayCommand( ExecuteOpenStrategyManager, () => IsEngineRunning);
+            ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, () => !IsBrokerConnected);
             // 订阅交易引擎事件
             _tradingEngine.SignalGenerated += OnSignalGenerated;
             _tradingEngine.OrderExecuted += OnOrderExecuted;
@@ -116,14 +111,13 @@ namespace QuantTrader.ViewModels
         void LoadDefaultStrategies()
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            var engine = _tradingEngine as TradingEngine;
             var types = assembly.GetTypes().Where(t => t.Namespace == "QuantTrader.Strategies");
             foreach (var type in types)
             {
                 if (type.IsSubclassOf(typeof(StrategyInfoBase)) && !type.IsAbstract)
                 {
                     string strategyId = $"{Guid.NewGuid():N}";
-                    var strategy = (StrategyInfoBase)Activator.CreateInstance(type, strategyId, engine.DataRepository);
+                    var strategy = (StrategyInfoBase)Activator.CreateInstance(type, strategyId);
                     if (strategy != null)
                     {
                         this.Strategies.Add(strategy);
@@ -166,106 +160,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private async Task ExecuteAddStrategyAsync()
-        {
-            try
-            {
-                // 显示策略配置对话框
-                var configWindow = new StrategyConfigWindow();
-                var result = configWindow.ShowDialog();
-
-                if (result != true)
-                    return;
-
-                //// 获取参数
-                //var strategyType = configWindow.ViewModel.StrategyType;
-                //var parameters = configWindow.Parameters;
-
-                //// 添加策略
-                //var strategy = await _tradingEngine.AddStrategyAsync(strategyType, parameters);
-
-                //ExecuteOnUI(() =>
-                //{
-                //    var strategyViewModel = new StrategyViewModel(strategy);
-                //    Strategies.Add(strategyViewModel);
-                //    SelectedStrategy = strategyViewModel;
-                //});
-
-                //StatusMessage = $"Strategy '{strategy.Name}' added successfully.";
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error adding strategy: {ex.Message}";
-            }
-        }
-
-        private async Task ExecuteRemoveStrategyAsync()
-        {
-            if (SelectedStrategy == null)
-                return;
-
-            try
-            {
-                StatusMessage = $"Removing strategy '{SelectedStrategy.Name}'...";
-                await _tradingEngine.RemoveStrategyAsync(SelectedStrategy.Id);
-
-                ExecuteOnUI(() =>
-                {
-                    Strategies.Remove(SelectedStrategy);
-                    SelectedStrategy = null;
-                });
-
-                StatusMessage = "Strategy removed successfully.";
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error removing strategy: {ex.Message}";
-            }
-        }
-
-        private async Task ExecuteStartStrategyAsync()
-        {
-            if (SelectedStrategy == null)
-                return;
-
-            try
-            {
-                StatusMessage = $"Starting strategy '{SelectedStrategy.Name}'...";
-                await _tradingEngine.StartStrategyAsync(SelectedStrategy.Id);
-
-                // 更新视图模型
-                //SelectedStrategy.Status = StrategyStatus.Running;
-
-                StatusMessage = $"Strategy '{SelectedStrategy.Name}' started successfully.";
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error starting strategy: {ex.Message}";
-            }
-        }
-
-        private async Task ExecuteStopStrategyAsync()
-        {
-            if (SelectedStrategy == null)
-                return;
-
-            try
-            {
-                StatusMessage = $"Stopping strategy '{SelectedStrategy.Name}'...";
-                await _tradingEngine.StopStrategyAsync(SelectedStrategy.Id);
-
-                // 更新视图模型
-                // SelectedStrategy.Status = StrategyStatus.Stopped;
-
-                StatusMessage = $"Strategy '{SelectedStrategy.Name}' stopped successfully.";
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error stopping strategy: {ex.Message}";
-            }
-        }
-
-        private async Task ExecuteConfigureStrategyAsync()
+        private void ExecuteConfigureStrategy()
         {
             if (SelectedStrategy == null)
                 return;
@@ -280,35 +175,11 @@ namespace QuantTrader.ViewModels
                 if (result != true)
                     return;
 
-                //// 获取参数
-                //var parameters = configWindow.Parameters;
-
-                //// 更新策略参数
-                //await _tradingEngine.UpdateStrategyParametersAsync(SelectedStrategy.Id, parameters);
-
-                //// 更新视图模型
-                //foreach (var param in parameters)
-                //{
-                //    SelectedStrategy.Parameters[param.Key] = param.Value;
-                //}
-
                 StatusMessage = $"Strategy '{SelectedStrategy.Name}' configured successfully.";
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Error configuring strategy: {ex.Message}";
-            }
-        }
-
-        private void ExecuteOpenStrategyManager()
-        {
-            try
-            {
-
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"打开Strategy管理窗口失败: {ex.Message}";
             }
         }
 
@@ -379,7 +250,7 @@ namespace QuantTrader.ViewModels
                     //    SelectedStrategy = strategyViewModel;
                     //});
 
-                    StatusMessage = $"Script strategy '{strategy.Name}' created successfully.";
+                    StatusMessage = $"Script strategy '{strategy.StrategyInfo.Name}' created successfully.";
                 }
             }
             catch (Exception ex)

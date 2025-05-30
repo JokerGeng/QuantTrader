@@ -66,7 +66,7 @@
         </Grid>
 
         <!-- 参数设置 -->
-        <Expander Grid.Row="1" Header="Strategy Parameters" IsExpanded="True" Margin="0,5">
+        <!--<Expander Grid.Row="1" Header="Strategy Parameters" IsExpanded="True" Margin="0,5">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -79,7 +79,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- 参数行1 -->
+                --><!-- 参数行1 --><!--
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Symbol:"/>
                 <TextBox Grid.Row="0" Grid.Column="1" 
                          Text="{Binding Parameters[Symbol], Mode=TwoWay}"/>
@@ -88,7 +88,7 @@
                 <TextBox Grid.Row="0" Grid.Column="3" 
                          Text="{Binding Parameters[Quantity], Mode=TwoWay}"/>
 
-                <!-- 参数行2 -->
+                --><!-- 参数行2 --><!--
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Lookback Period:"/>
                 <TextBox Grid.Row="1" Grid.Column="1" 
                          Text="{Binding Parameters[LookbackPeriod], Mode=TwoWay}"/>
@@ -97,7 +97,7 @@
                 <TextBox Grid.Row="1" Grid.Column="3" 
                          Text="{Binding Parameters[MaxPositionValue], Mode=TwoWay, StringFormat=N0}"/>
             </Grid>
-        </Expander>
+        </Expander>-->
 
         <!-- 代码编辑器 -->
         <Border Grid.Row="2" BorderBrush="#CCCCCC" BorderThickness="1">

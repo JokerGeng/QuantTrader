@@ -5,7 +5,7 @@ namespace QuantTrader.Strategies
 {
     public class MACDStrategyInfo : StrategyInfoBase
     {
-        public MACDStrategyInfo(string id, IDataRepository dataRepository) : base(id, dataRepository)
+        public MACDStrategyInfo(string id) : base(id)
         {
             Name = "MACD Strategy";
             Description = "Buy when MACD histogram crosses above zero, sell when it crosses below zero";

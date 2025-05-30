@@ -16,26 +16,12 @@ namespace QuantTrader.Strategies
         private readonly Dictionary<string, List<Candlestick>> _candlesticksCache = new Dictionary<string, List<Candlestick>>();
         private readonly Dictionary<string, Level1Data> _latestPrices = new Dictionary<string, Level1Data>();
 
-        public MovingAverageCrossStrategy(
-            string id,
+        public MovingAverageCrossStrategy(IStrategyInfo strategyInfo,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
-            : base(id, brokerService, marketDataService, dataRepository)
+            : base(strategyInfo, brokerService, marketDataService, dataRepository)
         {
-            Name = "Moving Average Cross";
-            Description = "Buy when fast MA crosses above slow MA, sell when fast MA crosses below slow MA";
-
-            // 设置默认参数
-            Parameters = new Dictionary<string, object>
-            {
-                { "Symbol", "AAPL" },
-                { "FastPeriod", 5 },
-                { "SlowPeriod", 20 },
-                { "Quantity", 100 },
-                { "CandlestickPeriod", TimeSpan.FromMinutes(5) },
-                { "MaxPositionValue", 100000m }
-            };
         }
 
         public override async Task StartAsync()
@@ -47,10 +33,9 @@ namespace QuantTrader.Strategies
             _cancellationTokenSource = new CancellationTokenSource();
 
             // 获取参数
-            var symbol = Parameters["Symbol"] as string;
-            var fastPeriod = Convert.ToInt32(Parameters["FastPeriod"]);
-            var slowPeriod = Convert.ToInt32(Parameters["SlowPeriod"]);
-            var period = (TimeSpan)Parameters["CandlestickPeriod"];
+            var fastPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "FastPeriod").Value);
+            var slowPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SlowPeriod").Value);
+            var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
 
             // 确保慢周期大于快周期
             if (slowPeriod <= fastPeriod)
@@ -61,10 +46,10 @@ namespace QuantTrader.Strategies
             }
 
             // 获取初始K线数据
-            await RefreshCandlesticksAsync(symbol, Math.Max(slowPeriod, 50), period);
+            await RefreshCandlesticksAsync(Symbol, Math.Max(slowPeriod, 50), period);
 
             // 订阅行情数据
-            _marketDataService.SubscribeLevel1Data(symbol, OnLevel1DataReceived);
+            _marketDataService.SubscribeLevel1Data(Symbol, OnLevel1DataReceived);
 
             // 启动策略循环
             Task.Run(() => RunStrategyLoopAsync(_cancellationTokenSource.Token));
@@ -86,17 +71,17 @@ namespace QuantTrader.Strategies
 
         private async Task RunStrategyLoopAsync(CancellationToken cancellationToken)
         {
-            var symbol = Parameters["Symbol"] as string;
-
             while (!cancellationToken.IsCancellationRequested && Status == StrategyStatus.Running)
             {
                 try
                 {
+                    var slowPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SlowPeriod").Value);
+                    var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
                     // 检查是否需要更新K线数据
-                    await RefreshCandlesticksAsync(symbol, Math.Max(Convert.ToInt32(Parameters["SlowPeriod"]), 50), (TimeSpan)Parameters["CandlestickPeriod"]);
+                    await RefreshCandlesticksAsync(Symbol, Math.Max(slowPeriod, 50), period);
 
                     // 生成交易信号
-                    await GenerateSignalsAsync(symbol);
+                    await GenerateSignalsAsync(Symbol);
 
                     // 等待下一个周期
                     await Task.Delay(1000, cancellationToken);
@@ -143,10 +128,10 @@ namespace QuantTrader.Strategies
                 return;
 
             // 获取参数
-            var fastPeriod = Convert.ToInt32(Parameters["FastPeriod"]);
-            var slowPeriod = Convert.ToInt32(Parameters["SlowPeriod"]);
-            var quantity = Convert.ToInt32(Parameters["Quantity"]);
-            var maxPositionValue = Convert.ToDecimal(Parameters["MaxPositionValue"]);
+            var fastPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "FastPeriod").Value);
+            var slowPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SlowPeriod").Value);
+            var quantity = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Quantity").Value);
+            var maxPositionValue = Convert.ToDecimal(StrategyInfo.Parameters.Find(t => t.Name == "MaxPositionValue").Value);
 
             // 确保有足够的数据
             if (candles.Count < slowPeriod)
