@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using QuantTrader.Commands;
+using QuantTrader.Models;
 using QuantTrader.Strategies;
 
 namespace QuantTrader.ViewModels
@@ -10,9 +11,9 @@ namespace QuantTrader.ViewModels
     /// </summary>
     public class StrategyConfigViewModel : ViewModelBase
     {
-        private StrategyBase _strategy;
+        private StrategyInfoBase _strategy;
 
-        public StrategyBase Strategy
+        public StrategyInfoBase Strategy
         {
             get => _strategy;
             set => SetProperty(ref _strategy, value);
@@ -21,7 +22,7 @@ namespace QuantTrader.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public event Action<Dictionary<string, object>> SaveRequested;
+        public event Action SaveRequested;
         public event Action CancelRequested;
 
         public StrategyConfigViewModel()
@@ -34,7 +35,7 @@ namespace QuantTrader.ViewModels
         private void ExecuteSave()
         {
             // 触发保存事件
-            SaveRequested?.Invoke(Strategy.Parameters);
+            SaveRequested?.Invoke();
         }
     }
 }

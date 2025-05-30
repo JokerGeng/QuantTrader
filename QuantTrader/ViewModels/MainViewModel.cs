@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using QuantTrader.Commands;
-using QuantTrader.Models;
-using QuantTrader.Strategies;
-using QuantTrader.TradingEngines;
+﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using QuantTrader.BrokerServices;
+using QuantTrader.Commands;
 using QuantTrader.MarketDatas;
+using QuantTrader.Models;
+using QuantTrader.Strategies;
+using QuantTrader.TradingEngines;
 using QuantTrader.Views;
-using System.Reflection;
 
 namespace QuantTrader.ViewModels
 {
@@ -24,7 +19,7 @@ namespace QuantTrader.ViewModels
 
         private bool _isEngineRunning;
         private AccountViewModel _account;
-        private StrategyBase _selectedStrategy;
+        private StrategyInfoBase _selectedStrategy;
         private string _statusMessage;
         private bool _isBrokerConnected;
         private string _brokerConnectionInfo;
@@ -59,9 +54,9 @@ namespace QuantTrader.ViewModels
             private set => SetProperty(ref _account, value);
         }
 
-        public ObservableCollection<StrategyBase> Strategies { get; } = new ObservableCollection<StrategyBase>();
+        public ObservableCollection<StrategyInfoBase> Strategies { get; } = new ObservableCollection<StrategyInfoBase>();
 
-        public StrategyBase SelectedStrategy
+        public StrategyInfoBase SelectedStrategy
         {
             get => _selectedStrategy;
             set => SetProperty(ref _selectedStrategy, value);
@@ -82,7 +77,7 @@ namespace QuantTrader.ViewModels
         public ICommand CreateCustomStrategyCommand { get; }
         public ICommand OpenStockManagerCommand { get; }
 
-        public MainViewModel(IServiceProvider serviceProvider ,ITradingEngine tradingEngine)
+        public MainViewModel(IServiceProvider serviceProvider, ITradingEngine tradingEngine)
         {
             _serviceProvider = serviceProvider;
             _tradingEngine = tradingEngine;
@@ -99,7 +94,7 @@ namespace QuantTrader.ViewModels
             }
 
             // 初始化命令
-            StartEngineCommand = new AsyncRelayCommand(ExecuteStartEngineAsync, ()=> !IsEngineRunning);
+            StartEngineCommand = new AsyncRelayCommand(ExecuteStartEngineAsync, () => !IsEngineRunning);
             StopEngineCommand = new AsyncRelayCommand(ExecuteStopEngineAsync, () => IsEngineRunning);
             //AddStrategyCommand = new AsyncRelayCommand(ExecuteAddStrategyAsync, () => IsEngineRunning);
             //RemoveStrategyCommand = new AsyncRelayCommand(ExecuteRemoveStrategyAsync, () => SelectedStrategy != null);
@@ -125,11 +120,10 @@ namespace QuantTrader.ViewModels
             var types = assembly.GetTypes().Where(t => t.Namespace == "QuantTrader.Strategies");
             foreach (var type in types)
             {
-                if(type.IsSubclassOf(typeof(StrategyBase)) && !type.IsAbstract)
+                if (type.IsSubclassOf(typeof(StrategyInfoBase)) && !type.IsAbstract)
                 {
-                    string strategyId = $"_{Guid.NewGuid():N}";
-                    var strategy = (StrategyBase)Activator.CreateInstance
-                        (type, strategyId, engine.BrokerService, engine.MarketDataService, engine.DataRepository);
+                    string strategyId = $"{Guid.NewGuid():N}";
+                    var strategy = (StrategyInfoBase)Activator.CreateInstance(type, strategyId, engine.DataRepository);
                     if (strategy != null)
                     {
                         this.Strategies.Add(strategy);
@@ -261,7 +255,7 @@ namespace QuantTrader.ViewModels
                 await _tradingEngine.StopStrategyAsync(SelectedStrategy.Id);
 
                 // 更新视图模型
-               // SelectedStrategy.Status = StrategyStatus.Stopped;
+                // SelectedStrategy.Status = StrategyStatus.Stopped;
 
                 StatusMessage = $"Strategy '{SelectedStrategy.Name}' stopped successfully.";
             }
@@ -280,7 +274,7 @@ namespace QuantTrader.ViewModels
             {
                 // 显示策略配置对话框
                 var configWindow = new StrategyConfigWindow();
-               configWindow.ViewModel.Strategy= SelectedStrategy;
+                configWindow.ViewModel.Strategy = SelectedStrategy;
 
                 var result = configWindow.ShowDialog();
                 if (result != true)
@@ -310,7 +304,7 @@ namespace QuantTrader.ViewModels
         {
             try
             {
-                
+
             }
             catch (Exception ex)
             {
@@ -342,7 +336,7 @@ namespace QuantTrader.ViewModels
                 StatusMessage = "Attempting to reconnect to broker...";
 
                 // 显示登录窗口重新连接
-                var loginWindow = new LoginWindow(new LoginViewModel(new BrokerServiceFactory(_serviceProvider),new MarketDataServiceFactory(_serviceProvider)));
+                var loginWindow = new LoginWindow(new LoginViewModel(new BrokerServiceFactory(_serviceProvider), new MarketDataServiceFactory(_serviceProvider)));
                 var result = loginWindow.ShowDialog();
 
                 if (result == true && loginWindow.BrokerService != null)
@@ -362,7 +356,7 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private  void ExecuteCreateCustomStrategy()
+        private void ExecuteCreateCustomStrategy()
         {
             try
             {

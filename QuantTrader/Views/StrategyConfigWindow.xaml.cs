@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using QuantTrader.Models;
 using QuantTrader.ViewModels;
 
 namespace QuantTrader.Views
@@ -21,8 +22,6 @@ namespace QuantTrader.Views
     public partial class StrategyConfigWindow : Window
     {
         private readonly StrategyConfigViewModel _viewModel;
-
-        public Dictionary<string, object> Parameters { get; private set; }
 
         public StrategyConfigViewModel ViewModel => _viewModel;
         public StrategyConfigWindow()
@@ -37,9 +36,8 @@ namespace QuantTrader.Views
             _viewModel.CancelRequested += OnCancelRequested;
         }
 
-        private void OnSaveRequested(Dictionary<string, object> parameters)
+        private void OnSaveRequested()
         {
-            Parameters = parameters;
             DialogResult = true;
             Close();
         }
