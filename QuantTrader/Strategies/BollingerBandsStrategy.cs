@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using QuantTrader.BrokerServices;
 using QuantTrader.MarketDatas;
+using QuantTrader.Models;
 using QuantTrader.Utils;
 
 namespace QuantTrader.Strategies

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QuantTrader.Models;
 
-namespace QuantTrader.Strategies
+namespace QuantTrader.Models
 {
     /// <summary>
     /// 交易信号

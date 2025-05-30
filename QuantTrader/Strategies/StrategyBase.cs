@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace QuantTrader.Strategies
 
         public string Id { get; }
         public string Name { get;  set; }
+        public string Symbol { get;  set; }
         public string Description { get; protected set; }
         public Dictionary<string, object> Parameters { get; protected set; }
         public StrategyStatus Status { get; protected set; }
@@ -38,7 +40,6 @@ namespace QuantTrader.Strategies
             _brokerService = brokerService;
             _marketDataService = marketDataService;
             _dataRepository = dataRepository;
-            Parameters = new Dictionary<string, object>();
             Status = StrategyStatus.Initialized;
         }
 
@@ -106,10 +107,10 @@ namespace QuantTrader.Strategies
 
         public virtual async Task UpdateParametersAsync(Dictionary<string, object> parameters)
         {
-            foreach (var param in parameters)
-            {
-                Parameters[param.Key] = param.Value;
-            }
+            //foreach (var param in parameters)
+            //{
+            //    Parameters[param.Key] = param.Value;
+            //}
 
             Log($"Parameters updated: {string.Join(", ", parameters.Select(p => $"{p.Key}={p.Value}"))}");
 

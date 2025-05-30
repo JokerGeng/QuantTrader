@@ -1,5 +1,6 @@
 ﻿using QuantTrader.BrokerServices;
 using QuantTrader.MarketDatas;
+using QuantTrader.Models;
 using QuantTrader.Utils;
 
 namespace QuantTrader.Strategies

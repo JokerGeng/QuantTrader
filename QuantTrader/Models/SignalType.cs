@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QuantTrader.Strategies
+namespace QuantTrader.Models
 {
     /// <summary>
     /// 信号类型

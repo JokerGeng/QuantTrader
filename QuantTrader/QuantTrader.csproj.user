@@ -17,8 +17,5 @@
     <Compile Update="Views\StrategyConfigWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\StrategyManagerWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 </Project>

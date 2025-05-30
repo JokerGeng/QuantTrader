@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using QuantTrader.Commands;
 using QuantTrader.MarketDatas;
 using QuantTrader.Models;
-using QuantTrader.Strategies;
 using QuantTrader.TradingEngines;
 using System.Windows.Input;
 

@@ -39,24 +39,11 @@
 
         <!-- 标题 -->
         <TextBlock Grid.Row="0" Text="Configure Strategy" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
-
-        <!-- 策略类型选择 -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Grid.Column="0" Text="Strategy Type:"/>
-            <ComboBox Grid.Column="1" 
-                      ItemsSource="{Binding AvailableStrategyTypes}" 
-                      SelectedItem="{Binding StrategyType}" 
-                      IsEnabled="{Binding IsNewStrategy}"/>
-        </Grid>
+        <TextBlock Grid.Row="1" Text="{Binding Strategy.Name}"/>
 
         <!-- 参数列表 -->
         <DataGrid Grid.Row="2" 
-                  ItemsSource="{Binding Parameters}" 
+                  ItemsSource="{Binding Strategy.Parameters}" 
                   AutoGenerateColumns="False" 
                   Margin="0,10" 
                   CanUserAddRows="False" 

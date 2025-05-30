@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,11 @@ namespace QuantTrader.Strategies
         /// 策略名称
         /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// 股票
+        /// </summary>
+        string Symbol {  get; }
 
         /// <summary>
         /// 策略描述
