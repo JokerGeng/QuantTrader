@@ -1,25 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using QuantTrader.BrokerServices;
+﻿using QuantTrader.BrokerServices;
 using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 
 namespace QuantTrader.Strategies
 {
-    public abstract class StrategyBase : IStrategyRuntime
+    public abstract class StrategyBase : IStrategy
     {
         protected readonly IBrokerService _brokerService;
         protected readonly IMarketDataService _marketDataService;
         protected readonly IDataRepository _dataRepository;
 
-        public IStrategyInfo StrategyInfo { get; }
-        public string Symbol { get;  set; }
+        public string Symbol { get; set; }
 
-        public StrategyStatus Status { get; protected set; }
+        public StrategyStatus Status { get; set; }
+
+        public string Id { get; protected set; }
+
+        public string Name { get; protected set; }
+
+        public string Description { get; protected set; }
+
+        public List<StrategyParameter> Parameters { get; } = new List<StrategyParameter>();
 
         public event Action<string, Order> OrderExecuted;
         public event Action<string, Signal> SignalGenerated;
@@ -28,17 +29,25 @@ namespace QuantTrader.Strategies
         protected Dictionary<string, Position> Positions { get; } = new Dictionary<string, Position>();
         protected Dictionary<string, Order> ActiveOrders { get; } = new Dictionary<string, Order>();
 
+
         protected StrategyBase(
-            IStrategyInfo strategyInfo,
+            string id,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
         {
-            StrategyInfo = strategyInfo;
+            Id = id;
             _brokerService = brokerService;
             _marketDataService = marketDataService;
             _dataRepository = dataRepository;
             Status = StrategyStatus.Initialized;
+        }
+
+        protected void InitInfo(IStrategyInfo info)
+        {
+            this.Description = info.Description;
+            this.Name = info.Name;
+            this.Parameters.AddRange(info.Parameters);
         }
 
         public virtual async Task InitializeAsync()
@@ -57,7 +66,7 @@ namespace QuantTrader.Strategies
 
             foreach (var order in orders)
             {
-                if (order.StrategyId == StrategyInfo.Id)
+                if (order.StrategyId == Id)
                 {
                     ActiveOrders[order.OrderId] = order;
                 }
@@ -105,7 +114,7 @@ namespace QuantTrader.Strategies
 
         protected virtual void OnOrderStatusChanged(Order order)
         {
-            if (order.StrategyId != StrategyInfo.Id)
+            if (order.StrategyId != Id)
                 return;
 
             if (order.IsActive)
@@ -122,12 +131,12 @@ namespace QuantTrader.Strategies
 
         protected virtual void OnOrderExecuted(Order order)
         {
-            if (order.StrategyId != StrategyInfo.Id)
+            if (order.StrategyId != Id)
                 return;
 
             Log($"Order executed: {order}");
 
-            OrderExecuted?.Invoke(StrategyInfo.Id, order);
+            OrderExecuted?.Invoke(Id, order);
         }
 
         protected async Task<Order> PlaceOrderAsync(Signal signal)
@@ -141,7 +150,7 @@ namespace QuantTrader.Strategies
                     OrderType.Limit,
                     signal.Price,
                     signal.Quantity,
-                    StrategyInfo.Id);
+                    Id);
 
                 Log($"Order placed: {order}");
                 return order;
@@ -157,7 +166,7 @@ namespace QuantTrader.Strategies
         {
             Log($"Signal generated: {signal}");
 
-            SignalGenerated?.Invoke(StrategyInfo.Id, signal);
+            SignalGenerated?.Invoke(Id, signal);
         }
 
         protected void Log(string message)
@@ -165,10 +174,15 @@ namespace QuantTrader.Strategies
             var timestamp = DateTime.Now;
 
             // 记录到数据库
-            _dataRepository.LogStrategyExecutionAsync(StrategyInfo.Id, message, timestamp).ConfigureAwait(false);
+            _dataRepository.LogStrategyExecutionAsync(Id, message, timestamp).ConfigureAwait(false);
 
             // 触发日志事件
-            LogGenerated?.Invoke(StrategyInfo.Id, message);
+            LogGenerated?.Invoke(Id, message);
+        }
+
+        public Task UpdateParametersAsync(StrategyParameter parameter)
+        {
+            throw new NotImplementedException();
         }
     }
 }

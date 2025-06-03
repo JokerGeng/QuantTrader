@@ -5,7 +5,7 @@ namespace QuantTrader.Strategies
 {
     public class BollingerBandsStrategyInfo : StrategyInfoBase
     {
-        public BollingerBandsStrategyInfo(string id) : base(id)
+        public BollingerBandsStrategyInfo() : base()
         {
             Name = "Bollinger Bands Strategy";
             Description = "Buy when price touches the lower band, sell when price touches the upper band";

@@ -5,7 +5,6 @@ namespace QuantTrader.Strategies
 {
     public abstract class StrategyInfoBase : IStrategyInfo
     {
-        public string Id { get; }
 
         public string Name { get; protected set; }
 
@@ -13,9 +12,8 @@ namespace QuantTrader.Strategies
 
         public List<StrategyParameter> Parameters { get; protected set; }
 
-        public StrategyInfoBase(string id)
+        protected StrategyInfoBase()
         {
-            this.Id = id;
         }
     }
 }

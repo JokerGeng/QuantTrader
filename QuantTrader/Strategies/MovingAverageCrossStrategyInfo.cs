@@ -5,7 +5,7 @@ namespace QuantTrader.Strategies
 {
     public class MovingAverageCrossStrategyInfo : StrategyInfoBase
     {
-        public MovingAverageCrossStrategyInfo(string id) : base(id)
+        public MovingAverageCrossStrategyInfo() : base()
         {
             Name = "Moving Average Cross";
             Description = "Buy when fast MA crosses above slow MA, sell when fast MA crosses below slow MA";

@@ -13,7 +13,7 @@ namespace QuantTrader.TradingEngines
         /// <summary>
         /// 当前策略列表
         /// </summary>
-        IReadOnlyList<IStrategy> Strategies { get; }
+        IReadOnlyList<StrategyBase> Strategies { get; }
 
         /// <summary>
         /// 当前账户信息
@@ -31,19 +31,9 @@ namespace QuantTrader.TradingEngines
         Task StopAsync();
 
         /// <summary>
-        /// 添加策略
-        /// </summary>
-        Task<IStrategy> AddStrategyAsync(string strategyType, Dictionary<string, object> parameters = null);
-
-        /// <summary>
-        /// 删除策略
-        /// </summary>
-        Task RemoveStrategyAsync(string strategyId);
-
-        /// <summary>
         /// 获取策略
         /// </summary>
-        IStrategy GetStrategy(string strategyId);
+        StrategyBase GetStrategy(string strategyId);
 
         /// <summary>
         /// 启动策略
@@ -56,9 +46,14 @@ namespace QuantTrader.TradingEngines
         Task StopStrategyAsync(string strategyId);
 
         /// <summary>
+        /// 添加策略
+        /// </summary>
+        Task<IStrategy> AddStrategyAsync(string strategyType, Dictionary<string, object> parameters = null);
+
+        /// <summary>
         /// 更新策略参数
         /// </summary>
-        Task UpdateStrategyParametersAsync(string strategyId, Dictionary<string, object> parameters);
+        //Task UpdateStrategyParametersAsync(string strategyId, Dictionary<string, object> parameters);
 
         /// <summary>
         /// 信号生成事件

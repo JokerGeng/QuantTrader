@@ -11,9 +11,9 @@ namespace QuantTrader.ViewModels
     /// </summary>
     public class StrategyConfigViewModel : ViewModelBase
     {
-        private StrategyInfoBase _strategy;
+        private IStrategy _strategy;
 
-        public StrategyInfoBase Strategy
+        public IStrategy Strategy
         {
             get => _strategy;
             set => SetProperty(ref _strategy, value);

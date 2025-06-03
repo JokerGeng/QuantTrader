@@ -11,12 +11,14 @@ namespace QuantTrader.Strategies
         private readonly Dictionary<string, List<Candlestick>> _candlesticksCache = new Dictionary<string, List<Candlestick>>();
         private readonly Dictionary<string, Level1Data> _latestPrices = new Dictionary<string, Level1Data>();
 
-        public MACDStrategy(IStrategyInfo strategyInfo,
+        public MACDStrategy(
+            string id,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
-            : base(strategyInfo, brokerService, marketDataService, dataRepository)
+            : base(id, brokerService, marketDataService, dataRepository)
         {
+            InitInfo(new MACDStrategyInfo());
         }
 
         public override async Task StartAsync()
@@ -29,10 +31,10 @@ namespace QuantTrader.Strategies
 
             // 获取参数
 
-            var fastPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "FastPeriod").Value);
-            var slowPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SlowPeriod").Value);
-            var signalPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SignalPeriod").Value);
-            var candlePeriod = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
+            var fastPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "FastPeriod").Value);
+            var slowPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "SlowPeriod").Value);
+            var signalPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "SignalPeriod").Value);
+            var candlePeriod = (TimeSpan)Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
 
             // 获取初始K线数据
             int requiredBars = Math.Max(slowPeriod + signalPeriod + 10, 50);
@@ -66,9 +68,9 @@ namespace QuantTrader.Strategies
                 try
                 {
                     // 检查是否需要更新K线数据
-                    var slowPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SlowPeriod").Value);
-                    var signalPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SignalPeriod").Value);
-                    var candlePeriod = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
+                    var slowPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "SlowPeriod").Value);
+                    var signalPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "SignalPeriod").Value);
+                    var candlePeriod = (TimeSpan)Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
                     int requiredBars = Math.Max(slowPeriod + signalPeriod + 10, 50);
 
                     await RefreshCandlesticksAsync(Symbol, requiredBars, candlePeriod);
@@ -121,13 +123,13 @@ namespace QuantTrader.Strategies
                 return;
 
             // 获取参数
-            var fastPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "FastPeriod").Value);
-            var slowPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SlowPeriod").Value);
-            var signalPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "SignalPeriod").Value);
-            var candlePeriod = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
-            var quantity = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Quantity").Value);
-            var maxPositionValue = Convert.ToDecimal(StrategyInfo.Parameters.Find(t => t.Name == "MaxPositionValue").Value);
-            var useHistogramSignal = Convert.ToBoolean(StrategyInfo.Parameters.Find(t => t.Name == "UseHistogramSignal").Value);
+            var fastPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "FastPeriod").Value);
+            var slowPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "SlowPeriod").Value);
+            var signalPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "SignalPeriod").Value);
+            var candlePeriod = (TimeSpan)Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
+            var quantity = Convert.ToInt32(Parameters.Find(t => t.Name == "Quantity").Value);
+            var maxPositionValue = Convert.ToDecimal(Parameters.Find(t => t.Name == "MaxPositionValue").Value);
+            var useHistogramSignal = Convert.ToBoolean(Parameters.Find(t => t.Name == "UseHistogramSignal").Value);
 
             // 确保有足够的数据
             if (candles.Count <= slowPeriod + signalPeriod)

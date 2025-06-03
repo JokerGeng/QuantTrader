@@ -19,7 +19,7 @@ namespace QuantTrader.ViewModels
 
         private bool _isEngineRunning;
         private AccountViewModel _account;
-        private StrategyInfoBase _selectedStrategy;
+        private IStrategy _selectedStrategy;
         private string _statusMessage;
         private bool _isBrokerConnected;
         private string _brokerConnectionInfo;
@@ -54,9 +54,9 @@ namespace QuantTrader.ViewModels
             private set => SetProperty(ref _account, value);
         }
 
-        public ObservableCollection<StrategyInfoBase> Strategies { get; } = new ObservableCollection<StrategyInfoBase>();
+        public ObservableCollection<IStrategy> Strategies { get; } = new ObservableCollection<IStrategy>();
 
-        public StrategyInfoBase SelectedStrategy
+        public IStrategy SelectedStrategy
         {
             get => _selectedStrategy;
             set => SetProperty(ref _selectedStrategy, value);
@@ -72,7 +72,6 @@ namespace QuantTrader.ViewModels
 
         public ICommand StartEngineCommand { get; }
         public ICommand StopEngineCommand { get; }
-        public ICommand ReconnectBrokerCommand { get; }
         public ICommand ConfigureStrategyCommand { get; }
         public ICommand CreateCustomStrategyCommand { get; }
         public ICommand OpenStockManagerCommand { get; }
@@ -82,8 +81,7 @@ namespace QuantTrader.ViewModels
             _serviceProvider = serviceProvider;
             _tradingEngine = tradingEngine;
 
-            if (_tradingEngine is TradingEngine engine &&
-      engine.BrokerService != null)
+            if (_tradingEngine is TradingEngine engine && engine.BrokerService != null)
             {
                 var brokerService = engine.BrokerService;
                 IsBrokerConnected = brokerService.IsConnected;
@@ -99,13 +97,13 @@ namespace QuantTrader.ViewModels
             ConfigureStrategyCommand = new RelayCommand(ExecuteConfigureStrategy);
             CreateCustomStrategyCommand = new RelayCommand(ExecuteCreateCustomStrategy);
             OpenStockManagerCommand = new RelayCommand(ExecuteOpenStockManager, () => IsEngineRunning);
-            ReconnectBrokerCommand = new RelayCommand(ExecuteReconnectBroker, () => !IsBrokerConnected);
+
             // 订阅交易引擎事件
             _tradingEngine.SignalGenerated += OnSignalGenerated;
             _tradingEngine.OrderExecuted += OnOrderExecuted;
             _tradingEngine.StrategyLogGenerated += OnStrategyLogGenerated;
             _tradingEngine.AccountUpdated += OnAccountUpdated;
-            LoadDefaultStrategies();
+
         }
 
         void LoadDefaultStrategies()
@@ -114,10 +112,9 @@ namespace QuantTrader.ViewModels
             var types = assembly.GetTypes().Where(t => t.Namespace == "QuantTrader.Strategies");
             foreach (var type in types)
             {
-                if (type.IsSubclassOf(typeof(StrategyInfoBase)) && !type.IsAbstract)
+                if (type.IsSubclassOf(typeof(StrategyBase)) && !type.IsAbstract)
                 {
-                    string strategyId = $"{Guid.NewGuid():N}";
-                    var strategy = (StrategyInfoBase)Activator.CreateInstance(type, strategyId);
+                    var strategy = (StrategyBase)Activator.CreateInstance(type);
                     if (strategy != null)
                     {
                         this.Strategies.Add(strategy);
@@ -183,50 +180,6 @@ namespace QuantTrader.ViewModels
             }
         }
 
-        private void ExecuteOpenStockManager()
-        {
-            try
-            {
-                var stockManagerViewModel = new StockManagerViewModel(
-                    _serviceProvider.GetRequiredService<IMarketDataService>(),
-                    _tradingEngine);
-
-                var stockManagerWindow = new StockManagerWindow(stockManagerViewModel);
-                stockManagerWindow.Show();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"打开股票管理窗口失败: {ex.Message}";
-            }
-        }
-
-        private void ExecuteReconnectBroker()
-        {
-            try
-            {
-                StatusMessage = "Attempting to reconnect to broker...";
-
-                // 显示登录窗口重新连接
-                var loginWindow = new LoginWindow(new LoginViewModel(new BrokerServiceFactory(_serviceProvider), new MarketDataServiceFactory(_serviceProvider)));
-                var result = loginWindow.ShowDialog();
-
-                if (result == true && loginWindow.BrokerService != null)
-                {
-                    // 重新连接成功，更新交易引擎的券商服务
-                    // 注意：这需要交易引擎支持热替换券商服务
-                    StatusMessage = "Reconnected to broker successfully.";
-                }
-                else
-                {
-                    StatusMessage = "Reconnection cancelled or failed.";
-                }
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Reconnection error: {ex.Message}";
-            }
-        }
-
         private void ExecuteCreateCustomStrategy()
         {
             try
@@ -250,12 +203,29 @@ namespace QuantTrader.ViewModels
                     //    SelectedStrategy = strategyViewModel;
                     //});
 
-                    StatusMessage = $"Script strategy '{strategy.StrategyInfo.Name}' created successfully.";
+                    StatusMessage = $"Script strategy '{strategy.Name}' created successfully.";
                 }
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Error creating script strategy: {ex.Message}";
+            }
+        }
+
+        private void ExecuteOpenStockManager()
+        {
+            try
+            {
+                var stockManagerViewModel = new StockManagerViewModel(
+                    _serviceProvider.GetRequiredService<IMarketDataService>(),
+                    _tradingEngine);
+
+                var stockManagerWindow = new StockManagerWindow(stockManagerViewModel);
+                stockManagerWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"打开股票管理窗口失败: {ex.Message}";
             }
         }
 

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 using QuantTrader.Commands;
 using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 using QuantTrader.TradingEngines;
-using System.Windows.Input;
 
 namespace QuantTrader.ViewModels
 {
@@ -73,8 +68,8 @@ namespace QuantTrader.ViewModels
             // 初始化命令
             AddStockCommand = new RelayCommand<StockInfo>(ExecuteAddStock, stock => stock != null);
             RemoveStockCommand = new RelayCommand<StockInfo>(ExecuteRemoveStock, stock => stock != null);
-            ClearAllCommand = new RelayCommand(ExecuteClearAll, ()=> SelectedStocks.Count > 0);
-            SelectAllCommand = new RelayCommand( ExecuteSelectAll);
+            ClearAllCommand = new RelayCommand(ExecuteClearAll, () => SelectedStocks.Count > 0);
+            SelectAllCommand = new RelayCommand(ExecuteSelectAll);
             ApplyStrategyCommand = new AsyncRelayCommand<StrategyTemplateViewModel>(ExecuteApplyStrategyAsync);
             StartAllStrategiesCommand = new AsyncRelayCommand(ExecuteStartAllStrategiesAsync);
             StopAllStrategiesCommand = new AsyncRelayCommand(ExecuteStopAllStrategiesAsync);
@@ -274,9 +269,7 @@ namespace QuantTrader.ViewModels
 
             // 停止相关策略
             var strategies = _tradingEngine.Strategies
-                .Where(s => s.Parameters.ContainsKey("Symbol") &&
-                           s.Parameters["Symbol"].ToString() == stock.Symbol)
-                .ToList();
+                .Where(s => s.Symbol == stock.Symbol).ToList();
 
             foreach (var strategy in strategies)
             {
@@ -448,9 +441,7 @@ namespace QuantTrader.ViewModels
                             {
                                 // 查找该股票的策略
                                 var strategies = _tradingEngine.Strategies
-                                    .Where(s => s.Parameters.ContainsKey("Symbol") &&
-                                               s.Parameters["Symbol"].ToString() == stock.Symbol)
-                                    .ToList();
+                                    .Where(s => s.Symbol == stock.Symbol).ToList();
 
                                 if (strategies.Count > 0)
                                 {

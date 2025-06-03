@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
+﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using QuantTrader.BrokerServices;
+using QuantTrader.MarketDatas;
 using QuantTrader.Models;
 using QuantTrader.Utils;
-using QuantTrader.MarketDatas;
 
 namespace QuantTrader.Strategies
 {
@@ -33,11 +28,12 @@ namespace QuantTrader.Strategies
             }
         }
 
-        public ScriptStrategy(IStrategyInfo strategyInfo,
+        public ScriptStrategy(
+            string id,
             IBrokerService brokerService,
             IMarketDataService marketDataService,
             IDataRepository dataRepository)
-            : base(strategyInfo, brokerService, marketDataService, dataRepository)
+            : base(id, brokerService, marketDataService, dataRepository)
         {
             ScriptCode = GetDefaultScript();
         }
@@ -68,8 +64,8 @@ namespace QuantTrader.Strategies
             _cancellationTokenSource = new CancellationTokenSource();
 
             // 获取参数
-            var lookbackPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "LookbackPeriod").Value);
-            var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
+            var lookbackPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "LookbackPeriod").Value);
+            var period = (TimeSpan)Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
 
             // 获取初始K线数据
             await RefreshCandlesticksAsync(Symbol, lookbackPeriod, period);
@@ -110,7 +106,7 @@ namespace QuantTrader.Strategies
                 _compiledScript = CSharpScript.Create<object>(_scriptCode, scriptOptions,
                     globalsType: typeof(ScriptGlobals));
 
-                 _compiledScript.Compile();
+                _compiledScript.Compile();
 
                 _isScriptCompiled = true;
                 //Log("Script compiled successfully");
@@ -129,8 +125,8 @@ namespace QuantTrader.Strategies
             {
                 try
                 {
-                    var lookbackPeriod = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "LookbackPeriod").Value);
-                    var period = (TimeSpan)StrategyInfo.Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
+                    var lookbackPeriod = Convert.ToInt32(Parameters.Find(t => t.Name == "LookbackPeriod").Value);
+                    var period = (TimeSpan)Parameters.Find(t => t.Name == "CandlestickPeriod").Value;
                     // 检查是否需要更新K线数据
                     await RefreshCandlesticksAsync(Symbol, lookbackPeriod, period);
 
@@ -191,7 +187,7 @@ namespace QuantTrader.Strategies
                 {
                     Candles = candles,
                     Symbol = symbol,
-                    Parameters = StrategyInfo.Parameters,
+                    Parameters = Parameters,
                     Position = Positions.TryGetValue(symbol, out var position) ? position : new Position(symbol),
                     CurrentSignal = null,
                     Logger = message => Log(message)
@@ -218,7 +214,7 @@ namespace QuantTrader.Strategies
                     // 默认数量
                     if (signal.Quantity == 0)
                     {
-                        var quantity = Convert.ToInt32(StrategyInfo.Parameters.Find(t => t.Name == "Quantity").Value);
+                        var quantity = Convert.ToInt32(Parameters.Find(t => t.Name == "Quantity").Value);
                         signal.Quantity = quantity;
                     }
 

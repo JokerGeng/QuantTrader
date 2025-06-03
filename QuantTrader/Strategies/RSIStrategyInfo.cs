@@ -11,7 +11,7 @@ namespace QuantTrader.Strategies
 {
     public class RSIStrategyInfo : StrategyInfoBase
     {
-        public RSIStrategyInfo(string id) : base(id)
+        public RSIStrategyInfo() : base()
         {
             Name = "RSI Strategy";
             Description = "Buy when RSI is below oversold level, sell when RSI is above overbought level";

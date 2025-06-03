@@ -2,12 +2,11 @@
 
 namespace QuantTrader.Strategies
 {
+    /// <summary>
+    /// 作为模板
+    /// </summary>
     public interface IStrategyInfo
     {
-        /// <summary>
-        /// 策略ID
-        /// </summary>
-        string Id { get; }
 
         /// <summary>
         /// 策略名称

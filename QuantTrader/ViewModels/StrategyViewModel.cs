@@ -39,7 +39,7 @@ namespace QuantTrader.ViewModels
             set => SetProperty(ref _status, value);
         }
 
-        public Dictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
+        public List<StrategyParameter> Parameters { get; } = new List<StrategyParameter>();
 
         public StrategyViewModel()
         {
@@ -51,11 +51,7 @@ namespace QuantTrader.ViewModels
             Name = strategy.Name;
             Description = strategy.Description;
             Status = strategy.Status;
-
-            foreach (var param in strategy.Parameters)
-            {
-                Parameters[param.Key] = param.Value;
-            }
+            Parameters.AddRange(strategy.Parameters);
         }
     }
 }

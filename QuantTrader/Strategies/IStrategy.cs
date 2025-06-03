@@ -21,11 +21,6 @@ namespace QuantTrader.Strategies
         string Name { get; }
 
         /// <summary>
-        /// 股票
-        /// </summary>
-        string Symbol {  get; }
-
-        /// <summary>
         /// 策略描述
         /// </summary>
         string Description { get; }
@@ -33,7 +28,7 @@ namespace QuantTrader.Strategies
         /// <summary>
         /// 策略参数列表
         /// </summary>
-        Dictionary<string, object> Parameters { get; }
+        List<StrategyParameter> Parameters { get; }
 
         /// <summary>
         /// 策略状态
@@ -58,7 +53,7 @@ namespace QuantTrader.Strategies
         /// <summary>
         /// 更新策略参数
         /// </summary>
-        Task UpdateParametersAsync(Dictionary<string, object> parameters);
+        Task UpdateParametersAsync(StrategyParameter parameter);
 
         /// <summary>
         /// 订单执行事件
